@@ -99,6 +99,10 @@ fetch('https://raw.githubusercontent.com/jeisey/phiti/main/graffiti.csv')
 document.getElementById('viewImage').addEventListener('click', function() {
     const zipCode = document.getElementById('zipcode').value;
     const imageContainer = document.getElementById('graffitiImage');
+    const instructionContainer = document.querySelector('.instruction-container');
+
+    instructionContainer.style.display = 'none';
+
     
     const filteredData = graffitiData.filter(item => item.zipcode === zipCode);
     if (filteredData.length > 0) {
