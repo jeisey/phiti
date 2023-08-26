@@ -1,0 +1,133 @@
+
+/* General Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #fafafa;
+    height: 100vh;
+    overflow: hidden;  /* Disable scrolling on the body */
+}
+
+.dashboard {
+    display: flex;
+    height: 100vh;
+}
+
+/* Sidebar Styles */
+.sidebar {
+    width: 300px;
+    min-width: 300px;
+    background-color: #ffffff;
+    padding: 20px;
+    overflow-y: auto;  /* Enable scrolling for the sidebar if content exceeds view height */
+    box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.sidebar-logo {
+    position: static; /* Reset the position to its default */
+    width: 120px; /* Adjust to make the logo smaller */
+    height: auto;
+    margin: 10px 0;
+    display: block;
+}
+
+
+.dropdowns {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.dropdown {
+    width: 100%;
+}
+
+button {
+    padding: 12px 24px;
+    background-color: #3498db;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+    font-weight: 600;
+    width: 100%;
+}
+
+button:hover {
+    background-color: #2980b9;
+}
+
+/* Content Area Styles */
+.content-area {
+    flex-grow: 1;  /* Allow the content area to take up the remaining space */
+    background-color: #f2f2f2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.imageContainer {
+    width: 80%;
+    max-width: 800px;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    position: relative;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+}
+
+img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.instruction-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    font-size: 1.2rem;
+    color: #555;
+    max-width: 80%;
+    line-height: 1.4;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .dashboard {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        min-width: initial;
+        height: auto;
+        padding: 10px;
+        position: static;
+    }
+
+    .sidebar-logo {
+        width: 100px; /* Make the logo smaller for mobile devices */
+        margin: 5px 0; /* Reduce the margin for mobile */
+    }
+
+    .content-area {
+        width: 100%;
+        padding: 20px;
+    }
+}
