@@ -26,5 +26,6 @@ Mini-hackathon on a friday night
 ## Credits
 
 - **Design & Development**: Jesse & Daniel
-- **Data Source**: Philly311 (https://data.phila.gov/visualizations/311-requests/)
-- Prison Policy Initiative ( https://www.prisonpolicy.org/origin/pa/2020/philadelphia.html)
+- **Data Sources**:
+-   Philly311 (https://data.phila.gov/visualizations/311-requests/)
+-   Prison Policy Initiative ( https://www.prisonpolicy.org/origin/pa/2020/philadelphia.html)
