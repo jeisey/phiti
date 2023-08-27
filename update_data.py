@@ -6,7 +6,6 @@ from datetime import datetime
 url = "https://raw.githubusercontent.com/jeisey/phiti/main/graffiti.csv"
 current_data = pd.read_csv(url, parse_dates=['requested_datetime', 'closed_datetime'], encoding='latin1')
 
-
 # Step 2: Find the most recent requested_datetime
 latest_date = current_data['requested_datetime'].max()
 latest_date = latest_date.tz_localize('UTC')
@@ -23,7 +22,6 @@ WHERE requested_datetime > '{latest_date}' OR
 response = requests.get("https://phl.carto.com/api/v2/sql", params={'q': query})
 new_data = pd.DataFrame(response.json()['rows'])
 new_data['requested_datetime'] = pd.to_datetime(new_data['requested_datetime'])
-
 
 # Step 4: Perform upsert operation
 # Update modified records
@@ -42,42 +40,28 @@ merged_data.drop(columns=['closed_datetime_new'], inplace=True)
 # Replace current_data with merged_data for further processing
 current_data = merged_data
 
-
 # Append new records
-new_records = new_data[new_data['requested_datetime'] > latest_date]
-
-# Exclude records from new_data that have a cartodb_id already present in current_data
 new_records = new_data[~new_data['cartodb_id'].isin(current_data['cartodb_id'])]
 current_data = pd.concat([current_data, new_records], ignore_index=True)
-
 
 # Step 5: Recalculate time_to_close column
 current_date = pd.Timestamp.now(tz='UTC')
 
 # Ensure both columns are parsed as datetime objects
-
-# Ensure 'closed_datetime' is parsed as a datetime object
 current_data['closed_datetime'] = pd.to_datetime(current_data['closed_datetime'], errors='coerce', utc=True)
-
-
-# Ensure 'requested_datetime' is parsed as a datetime object with UTC
 current_data['requested_datetime'] = pd.to_datetime(current_data['requested_datetime'], utc=True)
 
-
-
-# Convert datetime columns to proper datetime format
-current_data['requested_datetime'] = pd.to_datetime(current_data['requested_datetime'], errors='coerce', utc=True)
-current_data['closed_datetime'] = pd.to_datetime(current_data['closed_datetime'], errors='coerce', utc=True)
-
-# Handle potential NaN values in closed_datetime
-
-
-# Fill NaN values and ensure the result is a DatetimeArray
 filled_closed_datetime = pd.to_datetime(current_data['closed_datetime'].fillna(current_date))
-
 current_data['time_to_close'] = (filled_closed_datetime - current_data['requested_datetime']).dt.days
 
+# Load the reference file for area update
+ref_url = "https://raw.githubusercontent.com/jeisey/phiti/main/ref_ziparea.csv"
+ref_data = pd.read_csv(ref_url)
 
-# # Save the updated dataframe (this can be pushed back to GitHub or saved locally)
+# Join the current data with the reference data on zipcode to update the area column
+current_data = current_data.merge(ref_data[['Zip', 'District']], left_on='zipcode', right_on='Zip', how='left')
+current_data['area'] = current_data['District'].fillna("Not Applicable")
+current_data.drop(columns=['Zip', 'District'], inplace=True)  # Drop the columns used for the merge
+
+# Save the updated dataframe (this can be pushed back to GitHub or saved locally)
 current_data.to_csv("graffiti.csv", index=False)
-
