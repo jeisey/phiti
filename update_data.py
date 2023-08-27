@@ -18,6 +18,7 @@ FROM public_cases_fc
 WHERE requested_datetime > '{latest_date}' OR 
       (status = 'Open' AND closed_datetime IS NOT NULL)
       and subject = 'Graffiti Removal'
+      and media_url IS NOT NULL
 """
 response = requests.get("https://phl.carto.com/api/v2/sql", params={'q': query})
 new_data = pd.DataFrame(response.json()['rows'])
