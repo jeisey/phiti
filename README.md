@@ -1,9 +1,9 @@
-# phiti - Philadelphia Graffiti Visualization
-Phiti is a web application designed to explore Phildelphia's **graffiti-removal** images based on location and area, using data from Philly311.
+# phiti - Philadelphia Graffiti Explorer
+phiti is a web application designed to explore Phildelphia's **graffiti-removal** images based on location and area, using data from Philly311.
 
 View the public git page here: **https://jeisey.github.io/phiti/**
 
-**Phiti**: a blend of "Philadelphia" and "Graffiti"; sounds like "fih-TEE". 
+**phiti**: a blend of "Philadelphia" and "Graffiti"; sounds like "fih-TEE". 
 
 ## Features
 
