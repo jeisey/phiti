@@ -7,23 +7,30 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #fafafa;
+    /* font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; */
+    /* background-color: #fafafa; */
+    background-color: #F7F9FC; /* A light blueish-gray background */
     height: 100vh;
     overflow: hidden;  /* Disable scrolling on the body */
+    font-family: 'Arial', sans-serif; /* Use a widely supported font */
+    font-size: 16px; /* Base font size */
+    line-height: 1.5; /* Improve readability */
+    color: #333; /* A softer color for text */
 }
 
 .dashboard {
     display: flex;
     height: 100vh;
+    gap: 16px; /* Add some space between the sidebar and content */
 }
 
 /* Sidebar Styles */
 .sidebar {
-    width: 300px;
-    min-width: 300px;
+    width: 350px;
+    min-width: 350px;
     background-color: #ffffff;
-    padding: 20px;
+    border-right: 1px solid #E0E0E0; /* A light border to separate it from the content */
+    padding: 24px; /* More padding for the sidebar for a spacious look */
     overflow-y: auto;  /* Enable scrolling for the sidebar if content exceeds view height */
     box-shadow: 2px 0px 5px rgba(0, 0, 0, 0.1);
     display: flex;
@@ -50,9 +57,23 @@ body {
     width: 100%;
 }
 
+.dropdown select {
+    padding: 8px 12px; /* Padding for dropdowns */
+    border-radius: 4px; /* Rounded corners for dropdowns */
+}
+
+.info-section {
+    margin-bottom: 8px; /* Spacing between items */
+}
+
+footer p { 
+    font-size: 12px;
+    margin-bottom: 2px;
+}
+
 button {
     padding: 12px 24px;
-    background-color: #3498db;
+    background-color: #007BFF; /* A brighter blue for buttons */
     color: #ffffff;
     border: none;
     border-radius: 8px;
@@ -60,10 +81,15 @@ button {
     transition: background-color 0.3s, transform 0.3s;
     font-weight: 600;
     width: 100%;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
 }
 
 button:hover {
-    background-color: #2980b9;
+    background-color: #0056b3; /* A darker blue for hover state */
+}
+
+button:active {
+    transform: scale(0.98); /* Subtle push effect on click */
 }
 
 /* Content Area Styles */
@@ -84,6 +110,7 @@ button:hover {
     border: 1px solid #e0e0e0;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
     overflow: hidden;
+    border-radius: 8px; /* Rounded corners for modern look */
 }
 
 img {
@@ -130,4 +157,105 @@ img {
         width: 100%;
         padding: 20px;
     }
+}
+/* Modern Checkbox Styles */
+.status-filter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.status-filter input[type="checkbox"] {
+    display: none;
+}
+
+.status-filter label {
+    position: relative;
+    padding-left: 30px;
+    cursor: pointer;
+    user-select: none;
+    font-weight: 500;
+}
+
+.status-filter label::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    border: 2px solid #333;
+    border-radius: 4px;
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.status-filter label::after {
+    content: "\2714";
+    position: absolute;
+    left: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 16px;
+    color: #FFF;
+    transition: opacity 0.2s;
+    opacity: 0;
+}
+
+.status-filter input[type="checkbox"]:checked + label::before {
+    background-color: #007BFF;
+    border-color: #007BFF;
+}
+
+.status-filter input[type="checkbox"]:checked + label::after {
+    opacity: 1;
+}
+
+/* Tooltip Styles */
+.tooltip-container {
+    position: relative;
+    display: inline-block;
+    margin-left: 5px;
+    cursor: pointer;
+    font-size: 1.2em; /* Adjust the size */
+}
+
+.tooltip-text {
+    visibility: hidden;
+    width: 180px;
+    background-color: #555;
+    color: #fff;
+    text-align: center;
+    border-radius: 6px;
+    padding: 8px 0;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%; /* Position the tooltip above the icon */
+    left: 50%;
+    margin-left: -110px; /* Use half the width to center the tooltip */
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.6em; /* Adjust the size */
+}
+
+.tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+}
+
+.tooltip-container:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+.disclaimer {
+    font-size: 0.8em;   /* Slightly smaller than your main content font size */
+    font-style: italic;
+    color: #9a9a9a;    /* A slightly muted color */
 }
