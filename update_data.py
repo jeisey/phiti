@@ -6,6 +6,7 @@ from datetime import datetime
 url = "https://raw.githubusercontent.com/jeisey/phiti/main/graffiti.csv"
 current_data = pd.read_csv(url, parse_dates=['requested_datetime', 'closed_datetime'], encoding='latin1')
 
+
 # Step 2: Find the most recent requested_datetime
 latest_date = current_data['requested_datetime'].max()
 
@@ -22,7 +23,20 @@ new_data = pd.DataFrame(response.json()['rows'])
 # Step 4: Perform upsert operation
 # Update modified records
 mask = (current_data['status'] == 'Open') & (current_data['closed_datetime'].isna())
-current_data.loc[mask, 'closed_datetime'] = new_data.loc[new_data['status'] == 'Open', 'closed_datetime']
+
+# Merge datasets on unique identifier
+merged_data = pd.merge(current_data, new_data[['cartodb_id', 'closed_datetime']], on='cartodb_id', how='left', suffixes=('', '_new'))
+
+# Update the closed_datetime for "Open" status records
+mask = (merged_data['status'] == 'Open') & (merged_data['closed_datetime'].isna()) & (merged_data['closed_datetime_new'].notna())
+merged_data.loc[mask, 'closed_datetime'] = merged_data.loc[mask, 'closed_datetime_new']
+
+# Drop the additional columns introduced due to merging
+merged_data.drop(columns=['closed_datetime_new'], inplace=True)
+
+# Replace current_data with merged_data for further processing
+current_data = merged_data
+
 
 # Append new records
 new_records = new_data[new_data['requested_datetime'] > latest_date]
