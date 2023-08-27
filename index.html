@@ -1,19 +1,21 @@
-
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
     <title>Graffiti Viewer</title>
-    <link rel="stylesheet" href="styles.css">
+    <link href="styles.css" rel="stylesheet" />
 </head>
 <body>
     <div class="dashboard">
         <!-- Sidebar -->
         <div class="sidebar">
-            <img src="https://raw.githubusercontent.com/jeisey/phiti/main/phiti_logo.png" alt="phiti logo" class="sidebar-logo">
+            <img alt="phiti logo" class="sidebar-logo"
+                src="https://raw.githubusercontent.com/jeisey/phiti/main/phiti_logo.png" />
             <!-- <h1>phiti</h1> -->
-            <p>Explore philadelphia's graffiti removal requests</p>
+            <p>Explore Philadelphia's graffiti removal requests</p>
             
             <!-- Area and Zipcode Dropdowns -->
             <div class="dropdowns">
@@ -23,45 +25,61 @@
                         <!-- Options will be populated dynamically -->
                     </select>
                 </div>
+                
+
                 <div class="dropdown">
                     <label for="zipcode">Zip Code:</label>
                     <select id="zipcode">
                         <!-- Options will be populated dynamically -->
                     </select>
                 </div>
-            </div>
 
-            <button id="viewImage">View Image</button>
-            
+                <div class="status-filter"><input checked="True" id="closedStatus" type="checkbox" /><label
+                    for="closedStatus">Closed</label><input checked="True" id="openStatus" type="checkbox" /><label
+                    for="openStatus">Open</label><span class="tooltip-container">
+                        ❓
+                        <span class="tooltip-text">
+                            <b>Closed:</b> This indicates that the graffiti removal request has been addressed.<br>
+                            <b>Open:</b> This indicates that the graffiti removal request has not been resolved.
+                        </span>
+                    </span></div>
+                    
+
+            </div>
+            <button id="viewImage">View Graffiti</button>
             <!-- Descriptive sections -->
             <div class="info-section">
+                <p id="infoStatusCounts"><strong>Reports:</strong> <span id="statusCounts"></span></p>
                 <p><strong>Area:</strong> <span id="infoArea"></span></p>
                 <p><strong>Zip Code:</strong> <span id="infoZipcode"></span></p>
+                <p><strong>Address:</strong> <span id="infoAddress"></span></p>
                 <p><strong>Days to Resolve:</strong> <span id="infoTimeToClose"></span></p>
                 <p><strong>Date Reported:</strong> <span id="infoDateReported"></span></p>
                 <p><strong>Status:</strong> <span id="infoStatus"></span></p>
                 <p><strong>Notes:</strong> <span id="infoStatusNotes"></span></p>
             </div>
-            
+            <!-- Disclaimer Section -->
+            <p class="disclaimer">Please note: Some graffiti may contain profanity or other NSFW content. Viewer discretion is advised.</p>
             <!-- Footer Section for Credits -->
             <footer>
-                <p>Credits: <span>Jesse & Daniel</span></p>
-                <p>Source: <a href="https://github.com/jeisey/phiti" target="_blank">Github</a></p>
-                <p>Data: <a href="https://data.phila.gov/visualizations/311-requests/" target="_blank">Philly 311</a></p>
+                <p>Created by: <span>Jesse &amp; Daniel</span></p>
+                <p>Source: <a href="https://github.com/jeisey/phiti" target="_blank">Github</a>
+                </p>
+                <p>Data: <a href="https://data.phila.gov/visualizations/311-requests/" target="_blank">Philly 311</a>
+                </p>
             </footer>
         </div>
-
         <!-- Content Area -->
         <div class="content-area">
             <div class="instruction-container">
-                <p>Use the sidebar to select an area and zip code, then click "View Image" to see graffiti images from the selected location.</p>
-            </div>            
+                <p>Select a zip code and click <strong>'View Graffiti'</strong> to explore random graffiti from that area</p>
+            </div>
             <div class="imageContainer">
-                <img id="graffitiImage" src="" alt="Graffiti Image">
+                <img alt="Graffiti Image" id="graffitiImage" src="" />
             </div>
         </div>
     </div>
-
     <script src="script.js"></script>
 </body>
+
 </html>
