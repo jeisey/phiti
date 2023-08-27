@@ -8,7 +8,7 @@ current_data = pd.read_csv(url, parse_dates=['requested_datetime', 'closed_datet
 
 # Step 2: Find the most recent requested_datetime
 latest_date = current_data['requested_datetime'].max()
-latest_date = latest_date.tz_localize('UTC')
+latest_date = latest_date.tz_convert('UTC')
 
 # Step 3: Query the API for new or modified records
 query = f"""
@@ -54,17 +54,32 @@ current_date = pd.Timestamp.now(tz='UTC')
 current_data['closed_datetime'] = pd.to_datetime(current_data['closed_datetime'], errors='coerce', utc=True)
 current_data['requested_datetime'] = pd.to_datetime(current_data['requested_datetime'], utc=True)
 
+# Handle potential NaN values in closed_datetime
 filled_closed_datetime = pd.to_datetime(current_data['closed_datetime'].fillna(current_date))
+# Calculate time_to_close
 current_data['time_to_close'] = (filled_closed_datetime - current_data['requested_datetime']).dt.days
 
 # Load the reference file for area update
 ref_url = "https://raw.githubusercontent.com/jeisey/phiti/main/ref_ziparea.csv"
 ref_data = pd.read_csv(ref_url)
 
+
+# Ensure both columns used for merging are of the same data type
+current_data['zipcode'] = current_data['zipcode'].astype(str)
+ref_data['Zip'] = ref_data['Zip'].astype(str)
+
 # Join the current data with the reference data on zipcode to update the area column
+
+# Convert 'zipcode' to string and then strip any trailing '.0'
+current_data['zipcode'] = current_data['zipcode'].astype(str).str.rstrip('.0')
+
+# Drop rows with invalid zip codes
+invalid_zips = ['1920', '196139', 'None', 'nan']
+current_data = current_data[~current_data['zipcode'].isin(invalid_zips)]
+
 current_data = current_data.merge(ref_data[['Zip', 'District']], left_on='zipcode', right_on='Zip', how='left')
 current_data['area'] = current_data['District'].fillna("Not Applicable")
 current_data.drop(columns=['Zip', 'District'], inplace=True)  # Drop the columns used for the merge
 
-# Save the updated dataframe (this can be pushed back to GitHub or saved locally)
+# Save the updated dataframe (pushed to git repository)
 current_data.to_csv("graffiti.csv", index=False)
