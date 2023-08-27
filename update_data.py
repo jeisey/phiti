@@ -14,10 +14,14 @@ latest_date = latest_date.tz_convert('UTC')
 query = f"""
 SELECT cartodb_id,objectid,service_request_id,status,status_notes,requested_datetime,updated_datetime,expected_datetime,closed_datetime,address,zipcode,media_url,lat,lon 
 FROM public_cases_fc 
-WHERE requested_datetime > '{latest_date}' OR 
-      (status = 'Open' AND closed_datetime IS NOT NULL)
-      and subject = 'Graffiti Removal'
-      and media_url IS NOT NULL
+WHERE 
+      ( 
+        (requested_datetime > '{latest_date}') OR 
+        (status = 'Open' AND closed_datetime IS NOT NULL)
+      ) 
+      AND subject = 'Graffiti Removal'
+      AND media_url IS NOT NULL
+      AND media_url <> ''
 """
 response = requests.get("https://phl.carto.com/api/v2/sql", params={'q': query})
 new_data = pd.DataFrame(response.json()['rows'])
