@@ -28,14 +28,17 @@ new_data['requested_datetime'] = pd.to_datetime(new_data['requested_datetime'])
 mask = (current_data['status'] == 'Open') & (current_data['closed_datetime'].isna())
 
 # Merge datasets on unique identifier
-merged_data = pd.merge(current_data, new_data[['cartodb_id', 'closed_datetime']], on='cartodb_id', how='left', suffixes=('', '_new'))
+merged_data = pd.merge(current_data, new_data[['cartodb_id', 'closed_datetime', 'status_notes']], on='cartodb_id', how='left', suffixes=('', '_new'))
 
 # Update the closed_datetime for "Open" status records
 mask = (merged_data['status'] == 'Open') & (merged_data['closed_datetime'].isna()) & (merged_data['closed_datetime_new'].notna())
 merged_data.loc[mask, 'closed_datetime'] = merged_data.loc[mask, 'closed_datetime_new']
 
+# Update the status_notes for these records
+merged_data.loc[mask, 'status_notes'] = merged_data.loc[mask, 'status_notes_new']
+
 # Drop the additional columns introduced due to merging
-merged_data.drop(columns=['closed_datetime_new'], inplace=True)
+merged_data.drop(columns=['closed_datetime_new', 'status_notes_new'], inplace=True)
 
 # Replace current_data with merged_data for further processing
 current_data = merged_data
