@@ -1,0 +1,35 @@
+name: Update CSV Data
+
+on:
+  schedule:
+    #- cron: '0 0 * * *' # This will run at midnight every day
+    - cron: '0 0 * * MON' # This will run at midnight every Monday
+
+
+jobs:
+  update-data:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+
+    - name: Install dependencies
+      run: |
+        pip install pandas requests
+
+    - name: Run update script
+      run: python update_data.py
+
+    - name: Commit and push changes
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add graffiti.csv
+        git commit -m "Update graffiti.csv with new data" || echo "No changes to commit"
+        git push
