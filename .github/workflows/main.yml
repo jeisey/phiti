@@ -1,6 +1,7 @@
 name: Update CSV Data
 
 on:
+  workflow_dispatch:
   schedule:
     #- cron: '0 0 * * *' # This will run at midnight every day
     - cron: '0 0 * * MON' # This will run at midnight every Monday
