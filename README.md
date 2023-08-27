@@ -3,7 +3,7 @@ phiti is a web application designed to explore Phildelphia's **graffiti-removal*
 
 View the public git page here: **https://jeisey.github.io/phiti/**
 
-**phiti**: a blend of "Philadelphia" and "Graffiti"; sounds like "fih-TEE". 
+**phiti**: a blend of "Philadelphia" and "Graffiti"; sounds like "**fee**-TEE". 
 
 ## Features
 
