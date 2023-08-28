@@ -25,6 +25,11 @@ WHERE
 """
 response = requests.get("https://phl.carto.com/api/v2/sql", params={'q': query})
 new_data = pd.DataFrame(response.json()['rows'])
+# Check if there are new records, if not then exit
+if new_data.empty:
+    print("No new records fetched from the API.")
+    sys.exit(0)  # Exit the script gracefully with a status code of 0 (normal termination)
+
 new_data['requested_datetime'] = pd.to_datetime(new_data['requested_datetime'])
 
 # Step 4: Perform upsert operation
