@@ -17,150 +17,169 @@
             </div>
             <p class="tagline">Explore Philadelphia's graffiti removal requests</p>
             
+            <!-- Mobile Tabs - Only visible on mobile -->
+            <div class="mobile-tabs">
+                <div class="mobile-tab active" data-tab="filters">Filters</div>
+                <div class="mobile-tab" data-tab="info">Info</div>
+                <div class="mobile-tab" data-tab="stats">Stats</div>
+            </div>
+            
             <!-- Search bar -->
             <div class="search-container">
-                <input type="text" id="search" placeholder="Search by address or area...">
+                <input type="text" id="search" placeholder="Search by address (e.g. Ridge Ave) or zip (e.g. 19132)">
                 <button id="searchBtn" class="icon-button"><i class="fas fa-search"></i></button>
             </div>
             
             <!-- Filter section -->
-            <div class="filter-section">
-                <h3>Filter Options</h3>
-                <!-- Area and Zipcode Dropdowns -->
-                <div class="dropdowns">
-                    <div class="dropdown">
-                        <label for="area">Area:</label>
-                        <div class="select-wrapper">
-                            <select id="area">
-                                <!-- Options will be populated dynamically -->
-                            </select>
-                            <i class="fas fa-chevron-down"></i>
+            <div class="mobile-section active" data-section="filters">
+                <div class="filter-section">
+                    <h3>Filter Options</h3>
+                    <!-- Area and Zipcode Dropdowns -->
+                    <div class="dropdowns">
+                        <div class="dropdown">
+                            <label for="area">Area:</label>
+                            <div class="select-wrapper">
+                                <select id="area">
+                                    <!-- Options will be populated dynamically -->
+                                </select>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
                         </div>
-                    </div>
-                    
-                    <div class="dropdown">
-                        <label for="zipcode">Zip Code:</label>
-                        <div class="select-wrapper">
-                            <select id="zipcode">
-                                <!-- Options will be populated dynamically -->
-                            </select>
-                            <i class="fas fa-chevron-down"></i>
+                        
+                        <div class="dropdown">
+                            <label for="zipcode">Zip Code:</label>
+                            <div class="select-wrapper">
+                                <select id="zipcode">
+                                    <!-- Options will be populated dynamically -->
+                                </select>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
                         </div>
-                    </div>
 
-                    <!-- Date Range Filter -->
-                    <div class="dropdown">
-                        <label for="dateRange">Date Range:</label>
-                        <div class="select-wrapper">
-                            <select id="dateRange">
-                                <option value="all">All Dates</option>
-                                <option value="lastWeek">Last Week</option>
-                                <option value="lastMonth">Last Month</option>
-                                <option value="last3Months">Last 3 Months</option>
-                                <option value="lastYear">Last Year</option>
-                            </select>
-                            <i class="fas fa-chevron-down"></i>
+                        <!-- Date Range Filter -->
+                        <div class="dropdown">
+                            <label for="dateRange">Date Range:</label>
+                            <div class="select-wrapper">
+                                <select id="dateRange">
+                                    <option value="all">All Dates</option>
+                                    <option value="lastWeek">Last Week</option>
+                                    <option value="lastMonth">Last Month</option>
+                                    <option value="last3Months">Last 3 Months</option>
+                                    <option value="lastYear">Last Year</option>
+                                </select>
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+
+                        <div class="status-filter">
+                            <input checked="true" id="closedStatus" type="checkbox" />
+                            <label for="closedStatus">Closed</label>
+                            <input checked="true" id="openStatus" type="checkbox" />
+                            <label for="openStatus">Open</label>
+                            <div class="tooltip-container">
+                                <i class="fas fa-question-circle"></i>
+                                <span class="tooltip-text">
+                                    <b>Closed:</b> This indicates that the graffiti removal request has been addressed.<br>
+                                    <b>Open:</b> This indicates that the graffiti removal request has not been resolved.
+                                </span>
+                            </div>
                         </div>
                     </div>
+                    <button id="viewImage" class="primary-button">
+                        <i class="fas fa-eye"></i> View Graffiti
+                    </button>
+                </div>
 
-                    <div class="status-filter">
-                        <input checked="true" id="closedStatus" type="checkbox" />
-                        <label for="closedStatus">Closed</label>
-                        <input checked="true" id="openStatus" type="checkbox" />
-                        <label for="openStatus">Open</label>
-                        <div class="tooltip-container">
-                            <i class="fas fa-question-circle"></i>
-                            <span class="tooltip-text">
-                                <b>Closed:</b> This indicates that the graffiti removal request has been addressed.<br>
-                                <b>Open:</b> This indicates that the graffiti removal request has not been resolved.
-                            </span>
+                <!-- Action buttons -->
+                <div class="action-buttons">
+                    <button id="nextImage" class="secondary-button" disabled>
+                        <i class="fas fa-arrow-right"></i> Next
+                    </button>
+                    <button id="shareImage" class="secondary-button" disabled>
+                        <i class="fas fa-share-alt"></i> Share
+                    </button>
+                </div>
+            </div>
+
+            <!-- Stats at a glance - hidden initially on mobile -->
+            <div class="mobile-section" data-section="stats">
+                <div class="stats-container">
+                    <h3>Stats at a Glance</h3>
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span id="totalRequests" class="stat-number">0</span>
+                            <span class="stat-label">Total Requests</span>
+                        </div>
+                        <div class="stat-item">
+                            <span id="avgResolutionTime" class="stat-number">0</span>
+                            <span class="stat-label">Avg. Days to Resolve</span>
+                        </div>
+                    </div>
+                    <p id="infoStatusCounts" class="status-count"><strong>Status:</strong> <span id="statusCounts"></span></p>
+                </div>
+                
+                <!-- Disclaimer Section -->
+                <p class="disclaimer"><strong>Please note:</strong> Some graffiti may contain profanity or other NSFW content. Viewer discretion is advised.</p>
+                <p class="disclaimer"><strong>Availability:</strong> Data is refreshed every Monday at midnight.</p>
+                
+                <!-- Footer Section for Credits -->
+                <footer>
+                    <p>Created by: <span>Jesse & Daniel</span></p>
+                    <p>Source: <a href="https://github.com/jeisey/phiti" target="_blank">Github</a></p>
+                    <p>Data: <a href="https://data.phila.gov/visualizations/311-requests/" target="_blank">Philly 311</a></p>
+                </footer>
+            </div>
+            
+            <!-- Current selection details - hidden initially on mobile -->
+            <div class="mobile-section" data-section="info">
+                <div class="info-section">
+                    <h3>Current Selection</h3>
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <span class="detail-label"><i class="fas fa-map-marker-alt"></i> Area:</span>
+                            <span id="infoArea" class="detail-value"></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label"><i class="fas fa-location-dot"></i> Zip Code:</span>
+                            <span id="infoZipcode" class="detail-value"></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label"><i class="fas fa-road"></i> Address:</span>
+                            <span id="infoAddress" class="detail-value"></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label"><i class="fas fa-clock"></i> Days to Resolve:</span>
+                            <span id="infoTimeToClose" class="detail-value"></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label"><i class="fas fa-calendar"></i> Date Reported:</span>
+                            <span id="infoDateReported" class="detail-value"></span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label"><i class="fas fa-check-circle"></i> Status:</span>
+                            <span id="infoStatus" class="detail-value"></span>
+                        </div>
+                        <div class="detail-item full-width">
+                            <span class="detail-label"><i class="fas fa-clipboard"></i> Notes:</span>
+                            <span id="infoStatusNotes" class="detail-value"></span>
                         </div>
                     </div>
                 </div>
-                <button id="viewImage" class="primary-button">
-                    <i class="fas fa-eye"></i> View Graffiti
-                </button>
             </div>
-
-            <!-- Stats at a glance -->
-            <div class="stats-container">
-                <h3>Stats at a Glance</h3>
-                <div class="stats-grid">
-                    <div class="stat-item">
-                        <span id="totalRequests" class="stat-number">0</span>
-                        <span class="stat-label">Total Requests</span>
-                    </div>
-                    <div class="stat-item">
-                        <span id="avgResolutionTime" class="stat-number">0</span>
-                        <span class="stat-label">Avg. Days to Resolve</span>
-                    </div>
-                </div>
-                <p id="infoStatusCounts" class="status-count"><strong>Status:</strong> <span id="statusCounts"></span></p>
-            </div>
-            
-            <!-- Current selection details -->
-            <div class="info-section">
-                <h3>Current Selection</h3>
-                <div class="detail-grid">
-                    <div class="detail-item">
-                        <span class="detail-label"><i class="fas fa-map-marker-alt"></i> Area:</span>
-                        <span id="infoArea" class="detail-value"></span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label"><i class="fas fa-location-dot"></i> Zip Code:</span>
-                        <span id="infoZipcode" class="detail-value"></span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label"><i class="fas fa-road"></i> Address:</span>
-                        <span id="infoAddress" class="detail-value"></span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label"><i class="fas fa-clock"></i> Days to Resolve:</span>
-                        <span id="infoTimeToClose" class="detail-value"></span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label"><i class="fas fa-calendar"></i> Date Reported:</span>
-                        <span id="infoDateReported" class="detail-value"></span>
-                    </div>
-                    <div class="detail-item">
-                        <span class="detail-label"><i class="fas fa-check-circle"></i> Status:</span>
-                        <span id="infoStatus" class="detail-value"></span>
-                    </div>
-                    <div class="detail-item full-width">
-                        <span class="detail-label"><i class="fas fa-clipboard"></i> Notes:</span>
-                        <span id="infoStatusNotes" class="detail-value"></span>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Action buttons -->
-            <div class="action-buttons">
-                <button id="nextImage" class="secondary-button" disabled>
-                    <i class="fas fa-arrow-right"></i> Next
-                </button>
-                <button id="shareImage" class="secondary-button" disabled>
-                    <i class="fas fa-share-alt"></i> Share
-                </button>
-            </div>
-            
-            <!-- Disclaimer Section -->
-            <p class="disclaimer"><strong>Please note:</strong> Some graffiti may contain profanity or other NSFW content. Viewer discretion is advised.</p>
-            <p class="disclaimer"><strong>Availability:</strong> Data is refreshed every Monday at midnight.</p>
-            
-            <!-- Footer Section for Credits -->
-            <footer>
-                <p>Created by: <span>Jesse & Daniel</span></p>
-                <p>Source: <a href="https://github.com/jeisey/phiti" target="_blank">Github</a></p>
-                <p>Data: <a href="https://data.phila.gov/visualizations/311-requests/" target="_blank">Philly 311</a></p>
-            </footer>
         </div>
         
         <!-- Content Area -->
         <div class="content-area">
             <div class="instruction-container">
                 <div class="instruction-card">
-                    <i class="fas fa-info-circle instruction-icon"></i>
-                    <p>Select a zip code and click <strong>'View Graffiti'</strong> to explore random graffiti from that area</p>
+                    <i class="fas fa-map-pin instruction-icon"></i>
+                    <h3>Explore Philly's Graffiti</h3>
+                    <p>Select an area and zip code, then click <strong>'View Graffiti'</strong> to see removal requests from around the city.</p>
+                    <div class="quick-start">
+                        <button id="randomStartButton" class="primary-button">
+                            <i class="fas fa-random"></i> Show Random Graffiti
+                        </button>
+                    </div>
                 </div>
             </div>
             
@@ -171,7 +190,7 @@
             </div>
             
             <div class="image-container">
-                <img alt="Graffiti Image" id="graffitiImage" src="" hidden />
+                <img alt="Graffiti Image" id="graffitiImage" class="hidden" src="" />
                 <div class="image-controls hidden" id="imageControls">
                     <button id="zoomIn" class="image-button"><i class="fas fa-search-plus"></i></button>
                     <button id="zoomOut" class="image-button"><i class="fas fa-search-minus"></i></button>
@@ -183,6 +202,9 @@
             <div id="errorMessage" class="error-container hidden">
                 <i class="fas fa-exclamation-triangle"></i>
                 <p>Unable to load the image. Please try again.</p>
+                <button id="tryAgainButton" class="secondary-button">
+                    <i class="fas fa-redo"></i> Try Again
+                </button>
             </div>
         </div>
     </div>
