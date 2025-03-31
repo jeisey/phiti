@@ -7,6 +7,7 @@ let currentImages = []; // Array to store filtered images for the current select
 let currentImageIndex = -1; // Index of the currently displayed image
 let imageScale = 1; // For zoom functionality
 let searchTimeout; // For search debounce
+let isDataLoaded = false; // Flag to track if data has been loaded
 
 // DOM elements
 const elements = {
@@ -34,30 +35,58 @@ const elements = {
     copyLinkButton: document.getElementById('copyLink'),
     totalRequestsElement: document.getElementById('totalRequests'),
     avgResolutionTimeElement: document.getElementById('avgResolutionTime'),
-    statusCountsElement: document.getElementById('statusCounts')
+    statusCountsElement: document.getElementById('statusCounts'),
+    tryAgainButton: document.getElementById('tryAgainButton'),
+    randomStartButton: document.getElementById('randomStartButton'),
+    mobileTabs: document.querySelectorAll('.mobile-tab')
 };
 
 // Load data with better error handling
-Promise.all([
-    fetch('https://raw.githubusercontent.com/jeisey/phiti/main/ref_ziparea.csv')
-        .then(handleResponse)
-        .then(processReferenceData)
-        .catch(handleError),
+window.addEventListener('DOMContentLoaded', function() {
+    showLoadingScreen();
     
-    fetch('https://raw.githubusercontent.com/jeisey/phiti/main/graffiti.csv')
-        .then(handleResponse)
-        .then(processGraffitiData)
-        .catch(handleError)
-])
-.then(() => {
-    // Calculate and display stats
-    updateStats();
-    
-    // Initialize UI states
-    initializeUIState();
-    
-    console.log('All data loaded successfully');
+    Promise.all([
+        fetch('https://raw.githubusercontent.com/jeisey/phiti/main/ref_ziparea.csv')
+            .then(handleResponse)
+            .then(processReferenceData)
+            .catch(handleError),
+        
+        fetch('https://raw.githubusercontent.com/jeisey/phiti/main/graffiti.csv')
+            .then(handleResponse)
+            .then(processGraffitiData)
+            .catch(handleError)
+    ])
+    .then(() => {
+        // Calculate and display stats
+        updateStats();
+        
+        // Initialize UI states
+        initializeUIState();
+        
+        isDataLoaded = true;
+        hideLoadingScreen();
+        
+        console.log('All data loaded successfully');
+        
+        // Check for shared image URL parameters
+        checkForSharedImage();
+    })
+    .catch((error) => {
+        console.error('Failed to load application data:', error);
+        hideLoadingScreen();
+        showErrorMessage('Failed to load application data. Please refresh the page or try again later.');
+    });
 });
+
+// Helper function to show loading screen
+function showLoadingScreen() {
+    elements.loadingIndicator.classList.remove('hidden');
+}
+
+// Helper function to hide loading screen
+function hideLoadingScreen() {
+    elements.loadingIndicator.classList.add('hidden');
+}
 
 // Helper function to handle fetch responses
 function handleResponse(response) {
@@ -80,6 +109,12 @@ function processReferenceData(data) {
     
     // Skip header row if it exists
     const startIndex = rows[0].includes('Zip,District') ? 1 : 0;
+    
+    // Add default empty option to area dropdown
+    const defaultOption = document.createElement('option');
+    defaultOption.value = "";
+    defaultOption.textContent = "All Areas";
+    elements.areaDropdown.appendChild(defaultOption);
     
     for (let i = startIndex; i < rows.length; i++) {
         const columns = rows[i].split(',');
@@ -121,7 +156,8 @@ function processGraffitiData(data) {
     
     for (let i = startIndex; i < rows.length; i++) {
         try {
-            const columns = rows[i].split(',');
+            // Use regular expression to handle commas within quotes
+            const columns = parseCSVLine(rows[i]);
             
             // Check if row has enough columns
             if (columns.length < 16) continue;
@@ -164,6 +200,31 @@ function processGraffitiData(data) {
             console.error('Error processing row:', error);
         }
     }
+}
+
+// Parse CSV line properly handling commas in quotes
+function parseCSVLine(line) {
+    const result = [];
+    let cell = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        
+        if (char === '"') {
+            inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+            result.push(cell);
+            cell = '';
+        } else {
+            cell += char;
+        }
+    }
+    
+    // Push the last cell
+    result.push(cell);
+    
+    return result;
 }
 
 // Format date strings
@@ -237,6 +298,11 @@ function updateStats() {
     } else {
         elements.avgResolutionTimeElement.textContent = 'N/A';
     }
+    
+    // Update status counts
+    const closedCount = graffitiData.filter(item => item.status === 'Closed').length;
+    const openCount = graffitiData.filter(item => item.status === 'Open').length;
+    elements.statusCountsElement.textContent = `(${closedCount}) Closed | (${openCount}) Open`;
 }
 
 // Initialize UI state
@@ -255,6 +321,8 @@ function initializeUIState() {
     elements.viewImageButton.addEventListener('click', loadRandomImage);
     elements.nextImageButton.addEventListener('click', loadNextImage);
     elements.shareImageButton.addEventListener('click', showShareModal);
+    elements.randomStartButton.addEventListener('click', loadRandomGraffiti);
+    elements.tryAgainButton.addEventListener('click', retryLoadImage);
     
     // Search functionality
     elements.searchInput.addEventListener('input', function() {
@@ -264,6 +332,13 @@ function initializeUIState() {
     
     elements.searchButton.addEventListener('click', function() {
         performSearch(elements.searchInput.value);
+    });
+    
+    // Enter key in search
+    elements.searchInput.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter') {
+            performSearch(this.value);
+        }
     });
     
     // Image controls
@@ -289,16 +364,47 @@ function initializeUIState() {
     document.querySelector('.social-button.twitter').addEventListener('click', shareOnTwitter);
     document.querySelector('.social-button.facebook').addEventListener('click', shareOnFacebook);
     document.querySelector('.social-button.email').addEventListener('click', shareViaEmail);
+    
+    // Mobile tabs functionality
+    elements.mobileTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+            const targetTab = this.getAttribute('data-tab');
+            setActiveTab(targetTab);
+        });
+    });
+}
+
+// Set active tab for mobile view
+function setActiveTab(tabName) {
+    // Update tab styles
+    elements.mobileTabs.forEach(tab => {
+        if (tab.getAttribute('data-tab') === tabName) {
+            tab.classList.add('active');
+        } else {
+            tab.classList.remove('active');
+        }
+    });
+    
+    // Update section visibility
+    const sections = document.querySelectorAll('.mobile-section');
+    sections.forEach(section => {
+        if (section.getAttribute('data-section') === tabName) {
+            section.classList.add('active');
+        } else {
+            section.classList.remove('active');
+        }
+    });
 }
 
 // Reset image view when selection changes
 function resetImageView() {
     // Reset UI
-    elements.graffitiImage.hidden = true;
+    elements.graffitiImage.classList.add('hidden');
     elements.instructionContainer.style.display = 'flex';
     elements.nextImageButton.disabled = true;
     elements.shareImageButton.disabled = true;
     elements.imageControls.classList.add('hidden');
+    elements.errorMessage.classList.add('hidden');
     
     // Reset zoom
     resetZoom();
@@ -315,7 +421,6 @@ function resetImageView() {
     document.getElementById('infoAddress').textContent = '';
     document.getElementById('infoStatus').textContent = '';
     document.getElementById('infoStatusNotes').textContent = '';
-    document.getElementById('statusCounts').textContent = '';
 }
 
 // Filter graffiti data based on selection
@@ -374,16 +479,33 @@ function filterGraffitiData() {
     return filtered;
 }
 
+// Load random graffiti without filters
+function loadRandomGraffiti() {
+    // Reset any filters
+    elements.areaDropdown.value = '';
+    elements.zipDropdown.value = '';
+    elements.dateRangeDropdown.value = 'all';
+    elements.closedStatusCheckbox.checked = true;
+    elements.openStatusCheckbox.checked = true;
+    
+    // Populate zip dropdown with all areas
+    populateZipDropdown();
+    
+    // Load image
+    loadRandomImage();
+}
+
 // Load a random image based on current filters
 function loadRandomImage() {
     // Show loading indicator
     elements.loadingIndicator.classList.remove('hidden');
     elements.errorMessage.classList.add('hidden');
+    elements.instructionContainer.style.display = 'none';
     
     // Get filtered data
     const filteredData = filterGraffitiData();
     
-    // Update status counts
+    // Update status counts for current filter
     const closedCount = filteredData.filter(img => img.status === 'Closed').length;
     const openCount = filteredData.filter(img => img.status === 'Open').length;
     elements.statusCountsElement.textContent = `(${closedCount}) Closed | (${openCount}) Open`;
@@ -403,9 +525,23 @@ function loadRandomImage() {
     displayCurrentImage();
 }
 
+// Retry loading the current image
+function retryLoadImage() {
+    elements.errorMessage.classList.add('hidden');
+    
+    if (currentImages.length > 0 && currentImageIndex >= 0) {
+        elements.loadingIndicator.classList.remove('hidden');
+        displayCurrentImage();
+    } else {
+        loadRandomImage();
+    }
+}
+
 // Display the current image
 function displayCurrentImage() {
     if (currentImages.length === 0 || currentImageIndex < 0) {
+        elements.loadingIndicator.classList.add('hidden');
+        showErrorMessage('No image selected. Please try different filters.');
         return;
     }
     
@@ -414,6 +550,9 @@ function displayCurrentImage() {
     // Hide instructions and show image
     elements.instructionContainer.style.display = 'none';
     
+    // Reset zoom
+    resetZoom();
+    
     // Set image source
     elements.graffitiImage.src = currentEntry.media_url;
     
@@ -421,7 +560,7 @@ function displayCurrentImage() {
     elements.graffitiImage.onload = function() {
         // Hide loading indicator and show image
         elements.loadingIndicator.classList.add('hidden');
-        elements.graffitiImage.hidden = false;
+        elements.graffitiImage.classList.remove('hidden');
         elements.imageControls.classList.remove('hidden');
         
         // Enable next and share buttons
@@ -436,18 +575,23 @@ function displayCurrentImage() {
         document.getElementById('infoAddress').textContent = currentEntry.address || 'N/A';
         document.getElementById('infoStatus').textContent = currentEntry.status || 'N/A';
         document.getElementById('infoStatusNotes').textContent = currentEntry.status_notes || 'No notes provided';
+        
+        // Switch to info tab on mobile
+        if (window.innerWidth <= 768) {
+            setActiveTab('info');
+        }
     };
 }
 
 // Load the next image from current filtered results
 function loadNextImage() {
-    if (currentImages.length === 0) {
+    if (currentImages.length <= 1) {
         return;
     }
     
     // Show loading indicator
     elements.loadingIndicator.classList.remove('hidden');
-    elements.graffitiImage.hidden = true;
+    elements.graffitiImage.classList.add('hidden');
     
     // Get next image index
     currentImageIndex = (currentImageIndex + 1) % currentImages.length;
@@ -459,7 +603,7 @@ function loadNextImage() {
 // Handle image loading errors
 function handleImageError() {
     elements.loadingIndicator.classList.add('hidden');
-    elements.graffitiImage.hidden = true;
+    elements.graffitiImage.classList.add('hidden');
     
     showErrorMessage('Unable to load the image. The image may no longer be available.');
     
@@ -484,6 +628,11 @@ function performSearch(searchTerm) {
         return;
     }
     
+    // Show loading indicator
+    elements.loadingIndicator.classList.remove('hidden');
+    elements.errorMessage.classList.add('hidden');
+    elements.instructionContainer.style.display = 'none';
+    
     searchTerm = searchTerm.trim().toLowerCase();
     
     // Reset filters
@@ -498,6 +647,7 @@ function performSearch(searchTerm) {
     );
     
     if (searchResults.length === 0) {
+        elements.loadingIndicator.classList.add('hidden');
         showErrorMessage('No results found for your search. Please try different terms.');
         return;
     }
@@ -597,52 +747,45 @@ function shareViaEmail() {
     window.open(`mailto:?subject=${subject}&body=${body}`);
 }
 
-// Check for shared image URL parameters on page load
-window.addEventListener('DOMContentLoaded', function() {
+// Check for shared image URL parameters
+function checkForSharedImage() {
     const urlParams = new URLSearchParams(window.location.search);
     const sharedId = urlParams.get('id');
     
-    if (sharedId) {
-        // Wait for data to load first
-        const checkDataInterval = setInterval(() => {
-            if (graffitiData.length > 0) {
-                clearInterval(checkDataInterval);
-                
-                // Find the shared image
-                const sharedImage = graffitiData.find(item => item.id === sharedId);
-                
-                if (sharedImage) {
-                    // Set dropdowns to match image
-                    if (sharedImage.area) {
-                        elements.areaDropdown.value = sharedImage.area;
-                        populateZipDropdown(sharedImage.area);
-                    }
-                    
-                    if (sharedImage.zipcode) {
-                        elements.zipDropdown.value = sharedImage.zipcode;
-                    }
-                    
-                    // Set appropriate status checkbox
-                    elements.closedStatusCheckbox.checked = sharedImage.status === 'Closed';
-                    elements.openStatusCheckbox.checked = sharedImage.status === 'Open';
-                    
-                    // Load filtered results
-                    const filteredData = filterGraffitiData();
-                    currentImages = filteredData;
-                    
-                    // Find index of the shared image
-                    currentImageIndex = currentImages.findIndex(item => item.id === sharedId);
-                    
-                    if (currentImageIndex >= 0) {
-                        displayCurrentImage();
-                    } else {
-                        // If not found in filtered results, show directly
-                        currentImages = [sharedImage];
-                        currentImageIndex = 0;
-                        displayCurrentImage();
-                    }
-                }
+    if (sharedId && isDataLoaded) {
+        // Find the shared image
+        const sharedImage = graffitiData.find(item => item.id === sharedId);
+        
+        if (sharedImage) {
+            // Set dropdowns to match image
+            if (sharedImage.area) {
+                elements.areaDropdown.value = sharedImage.area;
+                populateZipDropdown(sharedImage.area);
             }
-        }, 100);
+            
+            if (sharedImage.zipcode) {
+                elements.zipDropdown.value = sharedImage.zipcode;
+            }
+            
+            // Set appropriate status checkbox
+            elements.closedStatusCheckbox.checked = sharedImage.status === 'Closed';
+            elements.openStatusCheckbox.checked = sharedImage.status === 'Open';
+            
+            // Load filtered results
+            const filteredData = filterGraffitiData();
+            currentImages = filteredData;
+            
+            // Find index of the shared image
+            currentImageIndex = currentImages.findIndex(item => item.id === sharedId);
+            
+            if (currentImageIndex >= 0) {
+                displayCurrentImage();
+            } else {
+                // If not found in filtered results, show directly
+                currentImages = [sharedImage];
+                currentImageIndex = 0;
+                displayCurrentImage();
+            }
+        }
     }
-});
+}
