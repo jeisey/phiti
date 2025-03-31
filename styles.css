@@ -673,6 +673,232 @@ footer a:hover {
     display: none !important;
 }
 
+/* Improved Content Area Styles */
+.content-area {
+    flex-grow: 1;
+    background-color: #f7f9fc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.instruction-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    max-width: 90%;
+    width: 460px;
+    z-index: 1;
+}
+
+.instruction-card {
+    background-color: white;
+    padding: 35px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+}
+
+.instruction-card h3 {
+    font-size: 24px;
+    margin-bottom: 10px;
+    color: var(--text-color);
+    border-bottom: none;
+}
+
+.instruction-card p {
+    color: var(--text-light);
+    margin-bottom: 20px;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.instruction-icon {
+    font-size: 56px;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+}
+
+.quick-start {
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* Image Container Improvements */
+.image-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f2f2f2;
+    position: relative;
+}
+
+#graffitiImage {
+    max-width: 95%;
+    max-height: 95%;
+    object-fit: contain;
+    transition: transform var(--transition-speed);
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Search Container Improvements */
+.search-container {
+    display: flex;
+    margin-bottom: 15px;
+}
+
+.search-container input {
+    flex: 1;
+    padding: 12px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius) 0 0 var(--border-radius);
+    font-size: 15px;
+}
+
+.search-container button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    padding: 0 15px;
+    cursor: pointer;
+    transition: background-color var(--transition-speed);
+}
+
+/* Error Message Improvements */
+.error-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 30px;
+    border-radius: var(--border-radius);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    z-index: 5;
+    text-align: center;
+    max-width: 90%;
+    width: 400px;
+}
+
+.error-container i {
+    font-size: 48px;
+    color: var(--error-color);
+    margin-bottom: 10px;
+}
+
+.error-container p {
+    font-size: 16px;
+    margin-bottom: 15px;
+}
+
+.error-container button {
+    margin-top: 10px;
+    width: auto;
+    padding-left: 25px;
+    padding-right: 25px;
+}
+
+/* Mobile Improvements */
+@media (max-width: 768px) {
+    .dashboard {
+        flex-direction: column;
+        height: 100vh;
+        overflow: auto;
+    }
+    
+    .sidebar {
+        width: 100%;
+        min-width: initial;
+        height: auto;
+        max-height: 45vh;
+        overflow-y: auto;
+    }
+    
+    .content-area {
+        height: 55vh;
+    }
+    
+    /* Single column layout for better mobile viewing */
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .detail-item {
+        grid-template-columns: 1fr;
+        gap: 3px;
+    }
+    
+    /* Tabs for mobile */
+    .mobile-tabs {
+        display: flex;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 15px;
+    }
+    
+    .mobile-tab {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        font-weight: 500;
+    }
+    
+    .mobile-tab.active {
+        border-bottom: 3px solid var(--primary-color);
+        color: var(--primary-color);
+    }
+    
+    /* Hide/show sections based on active tab */
+    .mobile-section {
+        display: none;
+    }
+    
+    .mobile-section.active {
+        display: block;
+    }
+}
+
+@media (min-width: 769px) {
+    .mobile-tabs {
+        display: none;
+    }
+    
+    .mobile-section {
+        display: block !important;
+    }
+}
+
+/* Fix checkbox styling */
+.status-filter input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+}
+
+/* Utility Classes */
+.hidden {
+    display: none !important;
+}
+
+.invisible {
+    visibility: hidden !important;
+}
+
 /* Responsive Design */
 @media (max-width: 1200px) {
     .sidebar {
