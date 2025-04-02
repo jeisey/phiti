@@ -1,4 +1,4 @@
-// Global variables
+    // Global variables
 let zipCodeMedia = {};
 let graffitiData = []; 
 let areaToZip = {}; 

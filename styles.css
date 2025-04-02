@@ -769,7 +769,7 @@ footer a:hover {
     background-color: var(--primary-color);
     color: white;
     border: none;
-    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    border-radius: 0 var(--border-radius) var (--border-radius) 0;
     padding: 0 15px;
     cursor: pointer;
     transition: background-color var(--transition-speed);
@@ -970,4 +970,192 @@ footer a:hover {
         padding: 10px;
         font-size: 13px;
     }
+}
+
+/* Adjust the CSS for the image container to ensure it takes up more space on mobile devices */
+@media (max-width: 768px) {
+    .image-container {
+        width: 100%;
+        height: 100%;
+    }
+}
+
+/* Ensure the image itself scales appropriately by setting the max-width and max-height properties to 100% */
+#graffitiImage {
+    max-width: 100%;
+    max-height: 100%;
+}
+
+/* Use media queries to apply changes only on mobile devices */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        min-width: initial;
+        height: auto;
+        max-height: 45vh;
+        overflow-y: auto;
+    }
+    
+    .content-area {
+        height: 55vh;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .detail-item {
+        grid-template-columns: 1fr;
+        gap: 3px;
+    }
+    
+    .mobile-tabs {
+        display: flex;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 15px;
+    }
+    
+    .mobile-tab {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        font-weight: 500;
+    }
+    
+    .mobile-tab.active {
+        border-bottom: 3px solid var(--primary-color);
+        color: var(--primary-color);
+    }
+    
+    .mobile-section {
+        display: none;
+    }
+    
+    .mobile-section.active {
+        display: block;
+    }
+}
+
+/* Optimize the layout and navigation for mobile devices */
+@media (max-width: 768px) {
+    .dashboard {
+        flex-direction: column;
+        height: 100vh;
+        overflow: auto;
+    }
+    
+    .sidebar {
+        width: 100%;
+        min-width: initial;
+        height: auto;
+        max-height: 45vh;
+        overflow-y: auto;
+    }
+    
+    .content-area {
+        height: 55vh;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .detail-item {
+        grid-template-columns: 1fr;
+        gap: 3px;
+    }
+    
+    .mobile-tabs {
+        display: flex;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 15px;
+    }
+    
+    .mobile-tab {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        cursor: pointer;
+        border-bottom: 3px solid transparent;
+        font-weight: 500;
+    }
+    
+    .mobile-tab.active {
+        border-bottom: 3px solid var(--primary-color);
+        color: var(--primary-color);
+    }
+    
+    .mobile-section {
+        display: none;
+    }
+    
+    .mobile-section.active {
+        display: block;
+    }
+}
+
+/* Improve accessibility and usability by ensuring sufficient contrast and readability */
+body {
+    background-color: var(--background-light);
+    height: 100vh;
+    overflow: hidden;
+    font-family: 'Segoe UI', 'Arial', sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+    color: var(--text-color);
+}
+
+h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: var(--text-color);
+    font-weight: 600;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+}
+
+.primary-button, .secondary-button {
+    padding: 12px;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: background-color var(--transition-speed), transform var(--transition-speed);
+    width: 100%;
+    font-size: 14px;
+}
+
+.primary-button {
+    background-color: var(--primary-color);
+    color: white;
+    box-shadow: 0 2px 5px var(--shadow-color);
+}
+
+.secondary-button {
+    background-color: var(--background-light);
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+.primary-button:hover {
+    background-color: var(--primary-hover);
+}
+
+.secondary-button:hover {
+    background-color: #e9ecef;
+}
+
+.primary-button:active, .secondary-button:active {
+    transform: scale(0.98);
+}
+
+.secondary-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
 }
