@@ -20,17 +20,19 @@
     --warning-color: #ffbe0b;
     --error-color: #ff0000;
     --border-radius: 8px;
-    --transition-speed: 0.3s;
+    --transition-speed: 0.3s ease-in-out; /* Added easing */
 }
 
 body {
     background-color: var(--background-light);
     height: 100vh;
-    overflow: hidden;
+    overflow: hidden; /* Prevents scrolling on body */
     font-family: 'Segoe UI', 'Arial', sans-serif;
     font-size: 16px;
     line-height: 1.5;
     color: var(--text-color);
+    position: fixed; /* Helps prevent scroll bounce issues on iOS */
+    width: 100%;
 }
 
 .dashboard {
@@ -45,19 +47,16 @@ body {
     min-width: 380px;
     background-color: var(--background-white);
     border-right: 1px solid var(--border-color);
-    padding: 20px;
-    overflow-y: auto;
-    box-shadow: 2px 0px 10px var(--shadow-color);
-    display: flex;
+    display: flex; /* Use flex */
     flex-direction: column;
-    gap: 20px;
-    transition: width var(--transition-speed);
+    height: 100vh;
+    box-shadow: 2px 0px 10px var(--shadow-color);
 }
 
 .logo-container {
     display: flex;
     justify-content: center;
-    margin-bottom: 10px;
+    padding: 20px 20px 10px 20px; /* Adjusted padding */
 }
 
 .sidebar-logo {
@@ -69,14 +68,25 @@ body {
 .tagline {
     text-align: center;
     color: var(--text-light);
-    margin-bottom: 10px;
+    margin: 0 20px 10px 20px; /* Adjusted margin */
     font-style: italic;
+    font-size: 14px;
 }
+
+.sidebar-content {
+    padding: 0 20px 20px 20px; /* Padding for content area */
+    overflow-y: auto; /* Allow scrolling within content */
+    flex-grow: 1; /* Take remaining space */
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
 
 /* Search Container */
 .search-container {
     display: flex;
-    margin-bottom: 15px;
+    margin-bottom: 0; /* Removed bottom margin, rely on gap */
 }
 
 .search-container input {
@@ -116,7 +126,7 @@ h3 {
     background-color: rgba(58, 134, 255, 0.05);
     border-radius: var(--border-radius);
     padding: 15px;
-    margin-bottom: 20px;
+    margin-bottom: 0; /* Rely on gap */
 }
 
 .dropdowns {
@@ -167,10 +177,14 @@ h3 {
     align-items: center;
     gap: 15px;
     margin-top: 5px;
+    flex-wrap: wrap; /* Allow wrapping */
 }
 
 .status-filter input[type="checkbox"] {
-    display: none;
+     position: absolute; /* Hide visually but keep accessible */
+     opacity: 0;
+     width: 0;
+     height: 0;
 }
 
 .status-filter label {
@@ -180,6 +194,7 @@ h3 {
     user-select: none;
     font-weight: 500;
     font-size: 14px;
+    line-height: 20px; /* Align with checkbox */
 }
 
 .status-filter label::before {
@@ -193,18 +208,20 @@ h3 {
     border: 2px solid var(--text-lighter);
     border-radius: 4px;
     transition: background-color var(--transition-speed), border-color var(--transition-speed);
+    background-color: white; /* Ensure background */
 }
 
 .status-filter label::after {
-    content: "\2714";
+    content: "\2714"; /* Checkmark */
     position: absolute;
     left: 4px;
     top: 50%;
-    transform: translateY(-50%);
+    transform: translateY(-50%) scale(0.8); /* Center and slightly smaller */
     font-size: 14px;
     color: white;
     transition: opacity var(--transition-speed);
     opacity: 0;
+    font-weight: bold;
 }
 
 .status-filter input[type="checkbox"]:checked + label::before {
@@ -216,12 +233,18 @@ h3 {
     opacity: 1;
 }
 
+.status-filter input[type="checkbox"]:focus + label::before { /* Focus indicator */
+     box-shadow: 0 0 0 2px rgba(58, 134, 255, 0.4);
+}
+
+
 /* Tooltip Styles */
 .tooltip-container {
     position: relative;
     display: inline-flex;
     align-items: center;
     cursor: pointer;
+    margin-left: auto; /* Push to right if needed, or adjust gap */
 }
 
 .tooltip-container i {
@@ -239,11 +262,11 @@ h3 {
     padding: 10px;
     position: absolute;
     z-index: 10;
-    bottom: 125%;
+    bottom: 135%; /* Increased distance */
     left: 50%;
     margin-left: -110px;
     opacity: 0;
-    transition: opacity var(--transition-speed);
+    transition: opacity var(--transition-speed), visibility var(--transition-speed);
     font-size: 12px;
     line-height: 1.5;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -260,7 +283,8 @@ h3 {
     border-color: #333 transparent transparent transparent;
 }
 
-.tooltip-container:hover .tooltip-text {
+.tooltip-container:hover .tooltip-text,
+.tooltip-container:focus .tooltip-text { /* Show on focus too */
     visibility: visible;
     opacity: 1;
 }
@@ -276,7 +300,7 @@ h3 {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    transition: background-color var(--transition-speed), transform var(--transition-speed);
+    transition: background-color var(--transition-speed), transform 0.1s ease; /* Faster active transform */
     width: 100%;
     font-size: 14px;
 }
@@ -305,9 +329,17 @@ h3 {
     transform: scale(0.98);
 }
 
-.secondary-button:disabled {
-    opacity: 0.5;
+.primary-button:disabled, .secondary-button:disabled {
+    opacity: 0.6; /* Slightly more visible */
     cursor: not-allowed;
+    background-color: #e9ecef; /* Grey out */
+    color: var(--text-lighter);
+    border-color: var(--border-color); /* Ensure border shows if secondary */
+     box-shadow: none;
+}
+.primary-button:disabled {
+     background-color: #a0c7ff; /* Disabled primary */
+     color: #e0e0e0;
 }
 
 /* Stats Container */
@@ -315,7 +347,6 @@ h3 {
     background-color: rgba(58, 134, 255, 0.05);
     border-radius: var(--border-radius);
     padding: 15px;
-    margin-bottom: 20px;
 }
 
 .stats-grid {
@@ -333,6 +364,7 @@ h3 {
     padding: 10px;
     border-radius: var(--border-radius);
     box-shadow: 0 2px 4px var(--shadow-color);
+    text-align: center;
 }
 
 .stat-number {
@@ -344,13 +376,16 @@ h3 {
 .stat-label {
     font-size: 12px;
     color: var(--text-light);
-    text-align: center;
 }
 
 .status-count {
     font-size: 14px;
     text-align: center;
     margin-top: 10px;
+    color: var(--text-light);
+}
+.status-count strong {
+    color: var(--text-color);
 }
 
 /* Info Section */
@@ -358,27 +393,23 @@ h3 {
     background-color: white;
     border-radius: var(--border-radius);
     padding: 15px;
-    margin-bottom: 20px;
     box-shadow: 0 2px 4px var(--shadow-color);
 }
 
 .detail-grid {
     display: grid;
-    grid-template-columns: 1fr;
-    gap: 10px;
+    grid-template-columns: 1fr; /* Single column better for varying content */
+    gap: 12px; /* Increased gap */
 }
 
 .detail-item {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    align-items: center;
+    display: flex; /* Use flex for alignment */
+    flex-direction: column; /* Stack label and value */
     font-size: 14px;
 }
 
 .detail-item.full-width {
-    grid-column: 1 / -1;
-    grid-template-columns: 1fr;
-    gap: 5px;
+    /* No change needed with flex-direction column */
 }
 
 .detail-label {
@@ -386,24 +417,22 @@ h3 {
     font-weight: 500;
     display: flex;
     align-items: center;
-    gap: 5px;
+    gap: 6px; /* Increased gap */
+    margin-bottom: 3px; /* Space between label and value */
 }
 
 .detail-label i {
     color: var(--primary-color);
     width: 16px;
+    text-align: center; /* Center icon */
 }
 
 .detail-value {
     color: var(--text-color);
     font-weight: 400;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.detail-item.full-width .detail-value {
-    white-space: normal;
+    overflow-wrap: break-word; /* Allow long words to break */
+    line-height: 1.4; /* Improve readability */
+    padding-left: 22px; /* Indent value under label icon */
 }
 
 /* Action Buttons */
@@ -411,7 +440,6 @@ h3 {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 10px;
-    margin-bottom: 20px;
 }
 
 /* Disclaimer */
@@ -419,12 +447,13 @@ h3 {
     font-size: 12px;
     font-style: italic;
     color: var(--text-lighter);
-    margin-bottom: 5px;
+    margin-top: 10px;
+    line-height: 1.4;
 }
 
 /* Footer */
 footer {
-    margin-top: auto;
+    margin-top: 15px; /* Add margin */
     padding-top: 15px;
     border-top: 1px solid var(--border-color);
     font-size: 12px;
@@ -432,7 +461,7 @@ footer {
 }
 
 footer p {
-    margin-bottom: 2px;
+    margin-bottom: 4px; /* Increased spacing */
 }
 
 footer a {
@@ -447,241 +476,12 @@ footer a:hover {
 /* Content Area Styles */
 .content-area {
     flex-grow: 1;
-    background-color: #f2f2f2;
+    background-color: #f2f2f2; /* Lighter grey */
     display: flex;
     align-items: center;
     justify-content: center;
-    position: relative;
-}
-
-.instruction-container {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-    max-width: 80%;
-    z-index: 1;
-}
-
-.instruction-card {
-    background-color: white;
-    padding: 30px;
-    border-radius: var(--border-radius);
-    box-shadow: 0 4px 12px var(--shadow-color);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-}
-
-.instruction-icon {
-    font-size: 48px;
-    color: var(--primary-color);
-}
-
-.image-container {
-    width: 90%;
-    max-width: 900px;
-    height: 90%;
-    max-height: 600px;
-    position: relative;
-    border-radius: var(--border-radius);
-    overflow: hidden;
-    box-shadow: 0 4px 16px var(--shadow-color);
-    background-color: #e0e0e0;
-}
-
-#graffitiImage {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    transition: transform var(--transition-speed);
-}
-
-.image-controls {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    display: flex;
-    gap: 10px;
-}
-
-.image-button {
-    background-color: rgba(0, 0, 0, 0.6);
-    border: none;
-    color: white;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background-color var(--transition-speed);
-}
-
-.image-button:hover {
-    background-color: rgba(0, 0, 0, 0.8);
-}
-
-/* Loading Indicator */
-.loading-container {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-    z-index: 2;
-}
-
-.spinner {
-    width: 50px;
-    height: 50px;
-    border: 5px solid rgba(58, 134, 255, 0.2);
-    border-top: 5px solid var(--primary-color);
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-/* Error Message */
-.error-container {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    background-color: white;
-    padding: 20px;
-    border-radius: var(--border-radius);
-    box-shadow: 0 4px 12px var(--shadow-color);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-    z-index: 2;
-    text-align: center;
-    max-width: 80%;
-}
-
-.error-container i {
-    font-size: 48px;
-    color: var(--error-color);
-}
-
-/* Share Modal */
-.modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 100;
-}
-
-.modal-content {
-    background-color: white;
-    padding: 30px;
-    border-radius: var(--border-radius);
-    max-width: 500px;
-    width: 90%;
-    position: relative;
-}
-
-.close {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    font-size: 24px;
-    cursor: pointer;
-    color: var(--text-lighter);
-}
-
-.share-link-container {
-    display: flex;
-    margin: 20px 0;
-}
-
-.share-link-container input {
-    flex: 1;
-    padding: 10px 15px;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius) 0 0 var(--border-radius);
-    font-size: 14px;
-}
-
-.share-link-container button {
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 0 var(--border-radius) var(--border-radius) 0;
-    padding: 0 15px;
-    cursor: pointer;
-    transition: background-color var(--transition-speed);
-    white-space: nowrap;
-}
-
-.social-share {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 10px;
-}
-
-.social-button {
-    padding: 10px;
-    border: none;
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    color: white;
-    font-weight: 500;
-    transition: opacity var(--transition-speed);
-}
-
-.social-button:hover {
-    opacity: 0.9;
-}
-
-.social-button.twitter {
-    background-color: #1DA1F2;
-}
-
-.social-button.facebook {
-    background-color: #4267B2;
-}
-
-.social-button.email {
-    background-color: #EA4335;
-}
-
-/* Utility Classes */
-.hidden {
-    display: none !important;
-}
-
-/* Improved Content Area Styles */
-.content-area {
-    flex-grow: 1;
-    background-color: #f7f9fc;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    overflow: hidden;
+    position: relative; /* For absolute children */
+    overflow: hidden; /* Prevent content spill */
 }
 
 .instruction-container {
@@ -692,8 +492,15 @@ footer a:hover {
     text-align: center;
     max-width: 90%;
     width: 460px;
-    z-index: 1;
+    z-index: 5; /* Above image container, below loader/error */
+    transition: opacity var(--transition-speed), visibility var(--transition-speed);
 }
+
+.instruction-container.hidden {
+     opacity: 0;
+     visibility: hidden;
+}
+
 
 .instruction-card {
     background-color: white;
@@ -729,53 +536,110 @@ footer a:hover {
 .quick-start {
     width: 100%;
     margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 
-/* Image Container Improvements */
+
 .image-container {
-    width: 100%;
-    height: 100%;
-    display: flex;
+    width: 100%; /* Default full width */
+    height: 100%; /* Default full height */
+    position: relative; /* For overlay controls */
+    overflow: hidden; /* Prevents image spill during zoom */
+    background-color: #e0e0e0; /* Placeholder background */
+    display: flex; /* Center image */
     align-items: center;
     justify-content: center;
-    background-color: #f2f2f2;
-    position: relative;
 }
 
 #graffitiImage {
-    max-width: 95%;
-    max-height: 95%;
+    display: block; /* Remove extra space below image */
+    max-width: 100%; /* Fit container */
+    max-height: 100%;
     object-fit: contain;
-    transition: transform var(--transition-speed);
-    border-radius: var(--border-radius);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    transition: transform var(--transition-speed), opacity var(--transition-speed);
+    cursor: grab; /* Indicate draggable possibilities */
+    opacity: 1;
+}
+#graffitiImage:active {
+     cursor: grabbing;
 }
 
-/* Search Container Improvements */
-.search-container {
+#graffitiImage.hidden {
+     opacity: 0;
+     visibility: hidden;
+}
+
+
+.image-controls {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
     display: flex;
-    margin-bottom: 15px;
+    gap: 10px;
+    z-index: 6; /* Above image, below loader/error */
+    transition: opacity var(--transition-speed), visibility var(--transition-speed);
+}
+.image-controls.hidden {
+     opacity: 0;
+     visibility: hidden;
 }
 
-.search-container input {
-    flex: 1;
-    padding: 12px 15px;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius) 0 0 var(--border-radius);
-    font-size: 15px;
-}
-
-.search-container button {
-    background-color: var(--primary-color);
-    color: white;
+.image-button {
+    background-color: rgba(0, 0, 0, 0.6);
     border: none;
-    border-radius: 0 var(--border-radius) var (--border-radius) 0;
-    padding: 0 15px;
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     cursor: pointer;
     transition: background-color var(--transition-speed);
 }
 
-/* Error Message Improvements */
+.image-button:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+/* Loading Indicator */
+.loading-container {
+    position: absolute;
+    top: 0; left: 0; /* Cover area */
+    width: 100%; height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    background-color: rgba(255, 255, 255, 0.85); /* Slightly less transparent */
+    z-index: 10;
+    transition: opacity var(--transition-speed), visibility var(--transition-speed);
+    opacity: 1;
+    visibility: visible;
+}
+.loading-container.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid rgba(58, 134, 255, 0.2);
+    border-top-color: var(--primary-color); /* Only color top */
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Error Message */
 .error-container {
     position: absolute;
     top: 50%;
@@ -789,13 +653,22 @@ footer a:hover {
     flex-direction: column;
     align-items: center;
     gap: 15px;
-    z-index: 5;
+    z-index: 10; /* Same level as loader */
     text-align: center;
     max-width: 90%;
     width: 400px;
+    transition: opacity var(--transition-speed), visibility var(--transition-speed);
+    opacity: 1;
+    visibility: visible;
 }
 
-.error-container i {
+.error-container.hidden {
+     opacity: 0;
+     visibility: hidden;
+}
+
+
+.error-container i.fa-exclamation-triangle { /* Be specific */
     font-size: 48px;
     color: var(--error-color);
     margin-bottom: 10px;
@@ -804,6 +677,7 @@ footer a:hover {
 .error-container p {
     font-size: 16px;
     margin-bottom: 15px;
+    color: var(--text-color);
 }
 
 .error-container button {
@@ -813,349 +687,456 @@ footer a:hover {
     padding-right: 25px;
 }
 
-/* Mobile Improvements */
-@media (max-width: 768px) {
-    .dashboard {
-        flex-direction: column;
-        height: 100vh;
-        overflow: auto;
-    }
-    
-    .sidebar {
-        width: 100%;
-        min-width: initial;
-        height: auto;
-        max-height: 45vh;
-        overflow-y: auto;
-    }
-    
-    .content-area {
-        height: 55vh;
-    }
-    
-    /* Single column layout for better mobile viewing */
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .detail-item {
-        grid-template-columns: 1fr;
-        gap: 3px;
-    }
-    
-    /* Tabs for mobile */
-    .mobile-tabs {
-        display: flex;
-        border-bottom: 1px solid var(--border-color);
-        margin-bottom: 15px;
-    }
-    
-    .mobile-tab {
-        flex: 1;
-        text-align: center;
-        padding: 10px;
-        cursor: pointer;
-        border-bottom: 3px solid transparent;
-        font-weight: 500;
-    }
-    
-    .mobile-tab.active {
-        border-bottom: 3px solid var(--primary-color);
-        color: var(--primary-color);
-    }
-    
-    /* Hide/show sections based on active tab */
-    .mobile-section {
-        display: none;
-    }
-    
-    .mobile-section.active {
-        display: block;
-    }
-}
-
-@media (min-width: 769px) {
-    .mobile-tabs {
-        display: none;
-    }
-    
-    .mobile-section {
-        display: block !important;
-    }
-}
-
-/* Fix checkbox styling */
-.status-filter input[type="checkbox"] {
-    position: absolute;
-    opacity: 0;
-}
-
-/* Utility Classes */
-.hidden {
-    display: none !important;
-}
-
-.invisible {
-    visibility: hidden !important;
-}
-
-/* Responsive Design */
-@media (max-width: 1200px) {
-    .sidebar {
-        width: 320px;
-        min-width: 320px;
-    }
-}
-
-@media (max-width: 992px) {
-    .sidebar {
-        width: 280px;
-        min-width: 280px;
-        padding: 15px;
-    }
-    
-    .sidebar-logo {
-        width: 120px;
-    }
-    
-    .stats-grid, .action-buttons {
-        grid-template-columns: 1fr;
-    }
-}
-
-@media (max-width: 768px) {
-    .dashboard {
-        flex-direction: column;
-        height: auto;
-        overflow: auto;
-    }
-    
-    .sidebar {
-        width: 100%;
-        min-width: initial;
-        height: auto;
-        max-height: 50vh;
-        overflow-y: auto;
-    }
-    
-    .content-area {
-        height: 50vh;
-    }
-    
-    .image-container {
-        width: 95%;
-        height: 90%;
-    }
-    
-    .detail-item {
-        grid-template-columns: 1fr;
-        gap: 2px;
-    }
-}
-
-@media (max-width: 480px) {
-    .social-share {
-        grid-template-columns: 1fr;
-    }
-    
-    h3 {
-        font-size: 15px;
-    }
-    
-    .stat-number {
-        font-size: 20px;
-    }
-    
-    .primary-button, .secondary-button {
-        padding: 10px;
-        font-size: 13px;
-    }
-}
-
-/* Adjust the CSS for the image container to ensure it takes up more space on mobile devices */
-@media (max-width: 768px) {
-    .image-container {
-        width: 100%;
-        height: 100%;
-    }
-}
-
-/* Ensure the image itself scales appropriately by setting the max-width and max-height properties to 100% */
-#graffitiImage {
-    max-width: 100%;
-    max-height: 100%;
-}
-
-/* Use media queries to apply changes only on mobile devices */
-@media (max-width: 768px) {
-    .sidebar {
-        width: 100%;
-        min-width: initial;
-        height: auto;
-        max-height: 45vh;
-        overflow-y: auto;
-    }
-    
-    .content-area {
-        height: 55vh;
-    }
-    
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .detail-item {
-        grid-template-columns: 1fr;
-        gap: 3px;
-    }
-    
-    .mobile-tabs {
-        display: flex;
-        border-bottom: 1px solid var(--border-color);
-        margin-bottom: 15px;
-    }
-    
-    .mobile-tab {
-        flex: 1;
-        text-align: center;
-        padding: 10px;
-        cursor: pointer;
-        border-bottom: 3px solid transparent;
-        font-weight: 500;
-    }
-    
-    .mobile-tab.active {
-        border-bottom: 3px solid var(--primary-color);
-        color: var(--primary-color);
-    }
-    
-    .mobile-section {
-        display: none;
-    }
-    
-    .mobile-section.active {
-        display: block;
-    }
-}
-
-/* Optimize the layout and navigation for mobile devices */
-@media (max-width: 768px) {
-    .dashboard {
-        flex-direction: column;
-        height: 100vh;
-        overflow: auto;
-    }
-    
-    .sidebar {
-        width: 100%;
-        min-width: initial;
-        height: auto;
-        max-height: 45vh;
-        overflow-y: auto;
-    }
-    
-    .content-area {
-        height: 55vh;
-    }
-    
-    .stats-grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .detail-item {
-        grid-template-columns: 1fr;
-        gap: 3px;
-    }
-    
-    .mobile-tabs {
-        display: flex;
-        border-bottom: 1px solid var(--border-color);
-        margin-bottom: 15px;
-    }
-    
-    .mobile-tab {
-        flex: 1;
-        text-align: center;
-        padding: 10px;
-        cursor: pointer;
-        border-bottom: 3px solid transparent;
-        font-weight: 500;
-    }
-    
-    .mobile-tab.active {
-        border-bottom: 3px solid var(--primary-color);
-        color: var(--primary-color);
-    }
-    
-    .mobile-section {
-        display: none;
-    }
-    
-    .mobile-section.active {
-        display: block;
-    }
-}
-
-/* Improve accessibility and usability by ensuring sufficient contrast and readability */
-body {
-    background-color: var(--background-light);
-    height: 100vh;
-    overflow: hidden;
-    font-family: 'Segoe UI', 'Arial', sans-serif;
-    font-size: 16px;
-    line-height: 1.5;
-    color: var(--text-color);
-}
-
-h3 {
-    font-size: 16px;
-    margin-bottom: 12px;
-    color: var(--text-color);
-    font-weight: 600;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 8px;
-}
-
-.primary-button, .secondary-button {
-    padding: 12px;
-    border: none;
-    border-radius: var(--border-radius);
-    cursor: pointer;
-    font-weight: 600;
+/* Share Modal */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6); /* Darker overlay */
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    transition: background-color var(--transition-speed), transform var(--transition-speed);
-    width: 100%;
-    font-size: 14px;
+    z-index: 1000; /* Highest level */
+    opacity: 1;
+    visibility: visible;
+    transition: opacity var(--transition-speed), visibility var(--transition-speed);
 }
 
-.primary-button {
+.modal.hidden {
+     opacity: 0;
+     visibility: hidden;
+}
+
+
+.modal-content {
+    background-color: white;
+    padding: 30px;
+    border-radius: var(--border-radius);
+    max-width: 500px;
+    width: 90%;
+    position: relative;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.modal .close { /* Specific selector */
+    position: absolute;
+    top: 10px; /* Closer to edge */
+    right: 10px;
+    font-size: 28px; /* Larger */
+    cursor: pointer;
+    color: var(--text-lighter);
+    background: none; /* Remove potential background */
+    border: none; /* Remove potential border */
+    padding: 5px; /* Easier click target */
+    line-height: 1; /* Prevent extra height */
+}
+.modal .close:hover {
+    color: var(--text-color);
+}
+
+.share-link-container {
+    display: flex;
+    margin: 20px 0;
+}
+
+.share-link-container input {
+    flex: 1;
+    padding: 10px 15px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius) 0 0 var(--border-radius);
+    font-size: 14px;
+    background-color: #f0f0f0; /* Indicate readonly */
+}
+
+.share-link-container button {
     background-color: var(--primary-color);
     color: white;
-    box-shadow: 0 2px 5px var(--shadow-color);
+    border: none;
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    padding: 0 15px;
+    cursor: pointer;
+    transition: background-color var(--transition-speed);
+    white-space: nowrap;
+    display: flex; /* Align icon */
+    align-items: center;
+    gap: 5px;
 }
-
-.secondary-button {
-    background-color: var(--background-light);
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
-}
-
-.primary-button:hover {
+.share-link-container button:hover {
     background-color: var(--primary-hover);
 }
-
-.secondary-button:hover {
-    background-color: #e9ecef;
+.share-link-container button:disabled {
+     background-color: var(--success-color); /* Green when copied */
+     cursor: default;
 }
 
-.primary-button:active, .secondary-button:active {
-    transform: scale(0.98);
+
+.social-share {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); /* Responsive grid */
+    gap: 10px;
+    margin-top: 20px; /* Space above buttons */
 }
 
-.secondary-button:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+.social-button {
+    padding: 10px;
+    border: none;
+    border-radius: var(--border-radius);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px; /* Increased gap */
+    color: white;
+    font-weight: 500;
+    transition: opacity var(--transition-speed);
+    font-size: 14px; /* Consistent font size */
+}
+
+.social-button:hover {
+    opacity: 0.9;
+}
+
+.social-button.twitter { background-color: #1DA1F2; }
+.social-button.facebook { background-color: #4267B2; }
+.social-button.email { background-color: #EA4335; }
+
+/* Utility Classes */
+.hidden {
+    display: none !important; /* Use sparingly, prefer visibility/opacity */
+}
+.visually-hidden { /* For accessibility, hides visually but not from screen readers */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
+}
+
+
+/* Desktop/Mobile Visibility Helpers */
+.desktop-only { display: grid; } /* Default display for desktop */
+.mobile-only { display: none; } /* Hidden by default */
+
+
+/* --- Mobile Styles --- */
+@media (max-width: 768px) {
+    body {
+        overflow: hidden; /* Prevent body scroll */
+        position: fixed;
+        width: 100%;
+    }
+
+    .desktop-only { display: none !important; }
+    .mobile-only { display: block; } /* Default block display for mobile */
+
+    .dashboard {
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    /* Sidebar becomes the content for the mobile panel */
+    .sidebar {
+        display: none; /* Hide sidebar container itself on mobile */
+    }
+    /* Ensure content takes full width/height inside panel */
+    .sidebar-content {
+         padding: 0; /* Remove padding, handled by panel */
+         height: 100%;
+         overflow-y: auto;
+    }
+
+    /* Content area takes full height */
+    .content-area {
+        height: 100vh; /* Take full available height */
+        flex-grow: 1;
+        position: relative;
+        overflow: hidden;
+    }
+
+     /* Make image container take full space within content area */
+     .image-container {
+         width: 100%;
+         height: 100%;
+         max-width: none;
+         max-height: none;
+         border-radius: 0;
+         box-shadow: none;
+         background-color: #222; /* Darker background */
+         position: absolute; /* Ensure it covers area */
+         top: 0; left: 0;
+     }
+
+     #graffitiImage {
+         max-width: 100%;
+         max-height: 100%;
+         object-fit: contain;
+         box-shadow: none;
+         border-radius: 0;
+     }
+
+    /* Image Zoom Controls Positioning */
+    .image-controls {
+        /* Keep at bottom right, but adjust spacing */
+        bottom: 15px;
+        right: 15px;
+        z-index: 6;
+    }
+    .image-button { /* Slightly smaller buttons */
+         width: 36px;
+         height: 36px;
+    }
+
+     /* Mobile Overlay Controls Styling */
+    .image-overlay-controls {
+        position: absolute;
+        bottom: 15px; /* Match zoom controls */
+        left: 0;
+        width: 100%;
+        display: flex;
+        justify-content: space-evenly; /* Even spacing */
+        align-items: center;
+        padding: 0 15px; /* Padding from edges */
+        z-index: 6; /* Same level as zoom */
+        pointer-events: none; /* Allow clicks/swipes through container initially */
+        opacity: 0;
+        visibility: hidden;
+        transition: opacity var(--transition-speed), visibility var(--transition-speed);
+    }
+
+    .image-overlay-controls.visible {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+    }
+
+    .overlay-button {
+        background-color: rgba(0, 0, 0, 0.65); /* Slightly darker */
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 50px; /* Larger tap target */
+        height: 50px;
+        font-size: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+        pointer-events: auto; /* Ensure buttons are clickable */
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+
+    .overlay-button:hover { /* No hover on mobile, but keep for dev */
+        background-color: rgba(0, 0, 0, 0.8);
+    }
+     .overlay-button:active {
+          background-color: rgba(0, 0, 0, 0.9);
+     }
+    .overlay-button:disabled {
+         background-color: rgba(0, 0, 0, 0.3);
+         cursor: not-allowed;
+         opacity: 0.7;
+         box-shadow: none;
+    }
+
+    /* Mobile Panel Styles */
+    .mobile-panel {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 85vh; /* Adjust height */
+        background-color: var(--background-white);
+        box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.2);
+        transform: translateY(100%);
+        transition: transform 0.35s ease-in-out; /* Slightly adjusted timing */
+        z-index: 101;
+        display: flex;
+        flex-direction: column;
+        border-top-left-radius: 16px;
+        border-top-right-radius: 16px;
+        overflow: hidden;
+        visibility: hidden; /* Add visibility */
+    }
+
+    .mobile-panel.open {
+        transform: translateY(0);
+        visibility: visible;
+    }
+
+    .mobile-panel-content {
+        flex-grow: 1;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch; /* Smooth scroll on iOS */
+        padding: 55px 20px 20px 20px; /* Top padding for close button, bottom padding */
+         display: flex;
+         flex-direction: column;
+         gap: 25px; /* Consistent gap between sections */
+    }
+
+     .close-panel-button {
+         position: absolute;
+         top: 10px;
+         right: 15px;
+         background: none;
+         border: none;
+         font-size: 28px;
+         color: var(--text-lighter);
+         cursor: pointer;
+         padding: 5px;
+         z-index: 102; /* Above content */
+     }
+
+
+    /* Overlay for dimming background when panel is open */
+     .mobile-panel-overlay {
+         position: fixed;
+         top: 0;
+         left: 0;
+         width: 100%;
+         height: 100%;
+         background-color: rgba(0, 0, 0, 0.5); /* Slightly darker */
+         opacity: 0;
+         transition: opacity 0.35s ease-in-out;
+         z-index: 100;
+         pointer-events: none;
+         visibility: hidden;
+     }
+
+      .mobile-panel-overlay.open {
+         opacity: 1;
+         pointer-events: auto;
+         visibility: visible;
+     }
+
+
+    /* Floating Action Button (FAB) for Panel Toggle */
+    .fab-button {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 56px;
+        height: 56px;
+        background-color: var(--primary-color);
+        color: white;
+        border-radius: 50%;
+        border: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        font-size: 24px;
+        display: flex; /* Already mobile-only */
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 99;
+        transition: transform 0.2s, background-color var(--transition-speed);
+    }
+
+    .fab-button:hover { /* Desktop dev */
+         background-color: var(--primary-hover);
+    }
+     .fab-button:active {
+         transform: scale(0.95);
+     }
+
+
+     /* Ensure all sidebar sections are visible when inside the panel */
+     .mobile-panel .mobile-section {
+         display: block !important; /* Override any potential hiding */
+         margin-bottom: 0; /* Use panel gap */
+     }
+     .mobile-panel .filter-section,
+     .mobile-panel .stats-container,
+     .mobile-panel .info-section {
+         background-color: transparent;
+         box-shadow: none;
+         padding: 0;
+         border-radius: 0;
+         margin-bottom: 0;
+     }
+     /* Adjust grids inside panel if needed */
+    .mobile-panel .stats-grid {
+        grid-template-columns: 1fr; /* Force single column stats */
+    }
+     .mobile-panel .detail-grid {
+         /* Already single column */
+     }
+      .mobile-panel .action-buttons {
+          display: none; /* Hide desktop buttons inside panel */
+      }
+      .mobile-panel footer {
+          margin-top: auto; /* Push footer to bottom if content short */
+          padding-top: 20px;
+      }
+
+      /* Adjust search button size */
+      .search-container button {
+          padding: 0 12px;
+      }
+
+}
+
+
+/* --- Desktop Styles --- */
+@media (min-width: 769px) {
+    .mobile-only { display: none !important; }
+    .desktop-only { display: grid !important; } /* Restore default */
+
+    /* Sidebar should be visible */
+    .sidebar {
+        display: flex !important;
+        /* Restore desktop width etc. if needed */
+        width: 380px;
+        min-width: 380px;
+    }
+     .sidebar-content > .mobile-section {
+         display: block !important; /* Ensure sections visible */
+     }
+
+     /* Restore content area for desktop */
+    .content-area {
+        height: 100vh;
+        padding: 20px; /* Padding around image */
+    }
+
+    /* Restore desktop image container styles */
+     .image-container {
+        width: 100%; /* Fill padded area */
+        height: 100%;
+        max-width: none; /* Remove restriction */
+        max-height: none;
+        border-radius: var(--border-radius);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        background-color: #e0e0e0;
+     }
+     #graffitiImage {
+        max-width: 100%;
+        max-height: 100%;
+        border-radius: var(--border-radius);
+         cursor: grab;
+     }
+     #graffitiImage:active {
+          cursor: grabbing;
+     }
+
+     /* Ensure mobile panel and related items are hidden */
+     .mobile-panel, .mobile-panel-overlay, .fab-button {
+         display: none !important;
+     }
+}
+
+/* Wider Desktop Tweaks */
+@media (min-width: 1200px) {
+    .sidebar {
+        width: 400px; /* Slightly wider */
+        min-width: 400px;
+    }
+    .content-area {
+        padding: 30px; /* More padding */
+    }
 }
