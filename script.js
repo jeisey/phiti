@@ -1141,3 +1141,81 @@ window.addEventListener('resize', () => {
 */
 
 console.log("Phiti script loaded.");
+
+// Separate function to load stats only when needed
+async function loadStatistics() {
+    const statsSection = document.querySelector('[data-section="stats"]');
+    
+    // Only load stats when they become visible or explicitly requested
+    try {
+        // Use a pre-computed stats endpoint or smaller summary file instead of full data
+        const response = await fetch('stats_summary.json'); // Create this smaller file with just stats
+        const stats = await response.json();
+        
+        document.getElementById('totalRequests').textContent = stats.totalRequests.toLocaleString();
+        document.getElementById('avgResolutionTime').textContent = stats.avgResolutionTime;
+        document.getElementById('statusCounts').textContent = `Open: ${stats.openCount}, Closed: ${stats.closedCount}`;
+    } catch (error) {
+        console.error('Error loading statistics:', error);
+    }
+}
+
+// Modify your initialization function to NOT load all data at once
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize UI, event listeners, etc.
+    
+    // Load initial random image without loading all data
+    loadRandomImage();
+    
+    // Delay loading stats until after initial image is shown
+    setTimeout(loadStatistics, 2000);
+    
+    // ...existing code...
+});
+
+// Function to load a random image for initial page display
+async function loadInitialRandomImage() {
+    showLoadingIndicator();
+    
+    try {
+        // Read just the first 20 lines of the CSV instead of the whole file
+        const response = await fetch('graffiti.csv?limit=20'); // Add a limit parameter your server can recognize
+        const csvText = await response.text();
+        const lines = csvText.split('\n').filter(line => line.trim() !== '');
+        
+        // Skip header row and pick a random entry from the first 20
+        const randomIndex = Math.floor(Math.random() * (Math.min(lines.length, 20) - 1)) + 1;
+        const randomLine = lines[randomIndex];
+        const columns = randomLine.split(',');
+        
+        // Create an entry object from the CSV line
+        const randomEntry = {
+            media_url: columns[11], // Assuming the URL is in column 11
+            address: columns[9],
+            status: columns[3],
+            requested_datetime: columns[5],
+            // Add other needed fields
+        };
+        
+        displayGraffitiImage(randomEntry);
+        updateInfoPanel(randomEntry);
+        
+        // Enable controls after image is loaded
+        enableUIControls();
+        hideLoadingIndicator();
+        hideInstructionContainer();
+    } catch (error) {
+        console.error('Error loading random image:', error);
+        showErrorMessage('Could not load a random image. Please try again.');
+    }
+}
+
+// Call this function when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    loadInitialRandomImage();
+    
+    // Delay loading stats until after initial image is shown
+    setTimeout(loadStatistics, 2000);
+    
+    // ...existing initialization code...
+});
