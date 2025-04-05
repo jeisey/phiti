@@ -1,0 +1,112 @@
+[
+  {
+    "media_url": "https://d21tc4b3k3r3vo.cloudfront.net/uploads/27412/requests/Z8omBUYJ-369.jpg",
+    "address": "1531 S 07TH ST",
+    "zipcode": "19147",
+    "status": "Closed",
+    "status_notes": "Issue Resolved",
+    "requested_datetime": "2014-12-19 15:15:00+00:00",
+    "closed_datetime": "2015-01-07 09:03:00+00:00",
+    "time_to_close": "18",
+    "area": "South Philly"
+  },
+  {
+    "media_url": "https://d21tc4b3k3r3vo.cloudfront.net/uploads/27412/requests/YWlDBdV8-369.jpg",
+    "address": "100 E CHELTEN AVE",
+    "zipcode": "19144",
+    "status": "Closed",
+    "status_notes": "Issue Resolved",
+    "requested_datetime": "2015-01-20 11:45:00+00:00",
+    "closed_datetime": "2015-01-23 09:29:00+00:00",
+    "time_to_close": "2",
+    "area": "Northwest Philly"
+  },
+  {
+    "media_url": "https://d21tc4b3k3r3vo.cloudfront.net/uploads/27412/requests/yJXTMwR4-369.jpg",
+    "address": "5700 GERMANTOWN AVE",
+    "zipcode": "19144",
+    "status": "Closed",
+    "status_notes": "Issue Resolved",
+    "requested_datetime": "2015-01-15 12:15:00+00:00",
+    "closed_datetime": "2015-01-20 09:50:00+00:00",
+    "time_to_close": "4",
+    "area": "Northwest Philly"
+  },
+  {
+    "media_url": "https://d21tc4b3k3r3vo.cloudfront.net/uploads/27412/requests/VJTE0lUj-369.jpg",
+    "address": "1167 DORRANCE ST",
+    "zipcode": "19146",
+    "status": "Closed",
+    "status_notes": "Issue Resolved",
+    "requested_datetime": "2015-02-26 15:45:00+00:00",
+    "closed_datetime": "2015-03-04 08:32:00+00:00",
+    "time_to_close": "5",
+    "area": "South Philly"
+  },
+  {
+    "media_url": "https://d21tc4b3k3r3vo.cloudfront.net/uploads/27412/requests/pW6LrRKz-369.jpg",
+    "address": "1622 RIDGE AVE",
+    "zipcode": "1913",
+    "status": "Closed",
+    "status_notes": "Issue Resolved",
+    "requested_datetime": "2015-02-11 14:45:00+00:00",
+    "closed_datetime": "2015-02-19 09:13:00+00:00",
+    "time_to_close": "7",
+    "area": "Not Applicable"
+  },
+  {
+    "media_url": "https://d21tc4b3k3r3vo.cloudfront.net/uploads/27412/requests/kKm9iUZO-369.jpg",
+    "address": "1700 RIDGE AVE",
+    "zipcode": "1913",
+    "status": "Closed",
+    "status_notes": "Issue Resolved",
+    "requested_datetime": "2015-02-24 15:15:00+00:00",
+    "closed_datetime": "2015-02-27 07:58:00+00:00",
+    "time_to_close": "2",
+    "area": "Not Applicable"
+  },
+  {
+    "media_url": "https://d21tc4b3k3r3vo.cloudfront.net/uploads/27412/requests/I9WbDIAh-369.jpg",
+    "address": "5718 GREENE ST",
+    "zipcode": "19144",
+    "status": "Closed",
+    "status_notes": "Issue Resolved",
+    "requested_datetime": "2014-12-23 13:15:00+00:00",
+    "closed_datetime": "2014-12-31 09:00:00+00:00",
+    "time_to_close": "7",
+    "area": "Northwest Philly"
+  },
+  {
+    "media_url": "https://d21tc4b3k3r3vo.cloudfront.net/uploads/27412/requests/G4vlua2x-369.jpg",
+    "address": "5316 GERMANTOWN AVE",
+    "zipcode": "19144",
+    "status": "Closed",
+    "status_notes": "Issue Resolved",
+    "requested_datetime": "2015-01-20 15:45:00+00:00",
+    "closed_datetime": "2015-01-23 08:47:00+00:00",
+    "time_to_close": "2",
+    "area": "Northwest Philly"
+  },
+  {
+    "media_url": "https://d21tc4b3k3r3vo.cloudfront.net/uploads/27412/requests/56104c3d88678-369.jpg",
+    "address": "1350 N HOWARD ST",
+    "zipcode": "19122",
+    "status": "Closed",
+    "status_notes": "Repair Completed",
+    "requested_datetime": "2015-10-03 17:45:00+00:00",
+    "closed_datetime": "2015-10-07 11:55:00+00:00",
+    "time_to_close": "3",
+    "area": "North Philly"
+  },
+  {
+    "media_url": "https://d21tc4b3k3r3vo.cloudfront.net/uploads/27412/requests/560049ff8a006-369.jpg",
+    "address": "1330 MASCHER ST",
+    "zipcode": "19122",
+    "status": "Closed",
+    "status_notes": "Repair Completed",
+    "requested_datetime": "2015-10-03 17:45:00+00:00",
+    "closed_datetime": "2015-10-08 10:30:00+00:00",
+    "time_to_close": "4",
+    "area": "North Philly"
+  }
+]

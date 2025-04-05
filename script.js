@@ -76,42 +76,53 @@ window.addEventListener('DOMContentLoaded', function() {
     elements.errorMessage.classList.add('hidden');
     showLoadingScreen(); // Show loader covering the content area
 
-    Promise.all([
-        fetch('https://raw.githubusercontent.com/jeisey/phiti/main/ref_ziparea.csv')
-            .then(handleResponse)
-            .then(processReferenceData)
-            .catch(handleError),
-
-        fetch('https://raw.githubusercontent.com/jeisey/phiti/main/graffiti.csv')
-            .then(handleResponse)
-            .then(processGraffitiData)
-            .catch(handleError)
-    ])
-    .then(() => {
-        if (graffitiData.length === 0) {
-             throw new Error("No graffiti data processed. Check CSV format or content.");
-        }
-        updateStats();
-        initializeUIState();
-        isDataLoaded = true;
-        hideLoadingScreen();
-        console.log('All data loaded successfully');
-
-        // Check for shared image *after* data load and UI init
-        // Only show instructions if no shared image is loaded and no error occurred
-        if (!checkForSharedImage() && elements.errorMessage.classList.contains('hidden')) {
+    // First load just the reference data (small file) and show a random image
+    fetch('https://raw.githubusercontent.com/jeisey/phiti/main/ref_ziparea.csv')
+        .then(handleResponse)
+        .then(processReferenceData)
+        .then(() => {
+            // Show instructions until user makes a selection
+            hideLoadingScreen();
             showInstructions();
-        }
-        updateButtonStates(); // Ensure buttons reflect initial state
-    })
-    .catch((error) => {
-        console.error('Failed to load application data:', error);
-        hideLoadingScreen();
-        showErrorMessage(`Failed to load application data. ${error.message}. Please try refreshing.`);
-        // Optionally show instructions or keep error message visible
-         // showInstructions(); // Or keep error message displayed
-    });
+            
+            // Setup lazy loading for stats section
+            const statsSection = document.querySelector('[data-section="stats"]');
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !isStatsLoaded) {
+                        loadStatsData();
+                        observer.disconnect();
+                    }
+                });
+            });
+            observer.observe(statsSection);
+            
+            // Enable random image buttons
+            initializeUIState();
+        })
+        .catch((error) => {
+            console.error('Failed to load reference data:', error);
+            hideLoadingScreen();
+            showErrorMessage(`Failed to load application data. ${error.message}. Please try refreshing.`);
+        });
 });
+
+// Add this variable and function
+let isStatsLoaded = false;
+
+function loadStatsData() {
+    showLoadingScreen();
+    fetch('https://raw.githubusercontent.com/jeisey/phiti/main/graffiti.csv')
+        .then(handleResponse)
+        .then(processGraffitiData)
+        .then(() => {
+            updateStats();
+            isStatsLoaded = true;
+            isDataLoaded = true;
+            hideLoadingScreen();
+        })
+        .catch(handleError);
+}
 
 // --- Loading and State Management ---
 
@@ -481,6 +492,14 @@ function loadRandomImage() {
     hideInstructions();
     showLoadingScreen();
 
+    if (!isDataLoaded) {
+        // Load data if not already loaded
+        loadStatsData().then(() => {
+            loadRandomImage(); // Call again after data is loaded
+        });
+        return;
+    }
+    
     const filteredData = filterGraffitiData();
 
     if (filteredData.length === 0) {
@@ -1218,4 +1237,42 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(loadStatistics, 2000);
     
     // ...existing initialization code...
+});
+
+// Add a new function to load a single random image without full dataset
+function loadInitialRandomImage() {
+    showLoadingScreen();
+    
+    // Fetch a single random entry from a dedicated endpoint
+    fetch('https://raw.githubusercontent.com/jeisey/phiti/main/random_sample.json')
+        .then(response => response.json())
+        .then(randomEntry => {
+            // Display this single entry
+            hideInstructions();
+            elements.graffitiImage.src = randomEntry.media_url;
+            elements.graffitiImage.alt = `Graffiti at ${randomEntry.address || 'Unknown Address'}`;
+            elements.graffitiImage.onload = () => {
+                hideLoadingScreen();
+                elements.graffitiImage.classList.remove('hidden');
+                elements.imageControls.classList.remove('hidden');
+                updateInfoDetails(randomEntry);
+            };
+            elements.graffitiImage.onerror = () => {
+                showErrorMessage("Unable to load initial image. Please try the 'Random Graffiti' button.");
+            };
+        })
+        .catch(error => {
+            console.error("Error loading initial random image:", error);
+            hideLoadingScreen();
+            showInstructions(); // Show instructions as fallback
+        });
+}
+
+// Modify the random buttons to work properly
+document.getElementById('randomStartButton').addEventListener('click', function() {
+    if (isDataLoaded) {
+        loadRandomGraffiti();
+    } else {
+        loadStatsData().then(loadRandomGraffiti);
+    }
 });
