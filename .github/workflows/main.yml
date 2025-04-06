@@ -22,7 +22,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install pandas requests json
+        pip install pandas requests
 
     - name: Run update script
       run: python update_data.py
