@@ -22,7 +22,7 @@ jobs:
 
     - name: Install dependencies
       run: |
-        pip install pandas requests
+        pip install pandas requests json
 
     - name: Run update script
       run: python update_data.py
@@ -31,6 +31,6 @@ jobs:
       run: |
         git config --local user.email "action@github.com"
         git config --local user.name "GitHub Action"
-        git add graffiti.csv
-        git commit -m "Update graffiti.csv with new data" || echo "No changes to commit"
+        git add graffiti.csv random_sample.json stats_summary.json
+        git commit -m "Update data files" || echo "No changes to commit"
         git push

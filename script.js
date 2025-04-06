@@ -74,36 +74,27 @@ window.addEventListener('DOMContentLoaded', function() {
     // Hide instructions and error initially
     elements.instructionContainer.classList.add('hidden');
     elements.errorMessage.classList.add('hidden');
-    showLoadingScreen(); // Show loader covering the content area
-
-    // First load just the reference data (small file) and show a random image
+    
+    // Only load reference data initially (zip codes and areas)
     fetch('https://raw.githubusercontent.com/jeisey/phiti/main/ref_ziparea.csv')
         .then(handleResponse)
         .then(processReferenceData)
         .then(() => {
-            // Show instructions until user makes a selection
             hideLoadingScreen();
             showInstructions();
-            
-            // Setup lazy loading for stats section
-            const statsSection = document.querySelector('[data-section="stats"]');
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting && !isStatsLoaded) {
-                        loadStatsData();
-                        observer.disconnect();
-                    }
-                });
-            });
-            observer.observe(statsSection);
-            
-            // Enable random image buttons
             initializeUIState();
+            
+            // Load initial random image from separate endpoint
+            return fetch('random_sample.json');
         })
-        .catch((error) => {
-            console.error('Failed to load reference data:', error);
-            hideLoadingScreen();
-            showErrorMessage(`Failed to load application data. ${error.message}. Please try refreshing.`);
+        .then(response => response.json())
+        .then(randomData => {
+            // Display random image without loading full dataset
+            displayGraffitiImage(randomData);
+        })
+        .catch(error => {
+            console.error('Failed to load initial data:', error);
+            showErrorMessage('Failed to load application data. Please try refreshing.');
         });
 });
 
@@ -488,36 +479,37 @@ function filterGraffitiData() {
 // --- Image Display and Navigation ---
 
 function loadRandomImage() {
+    showLoadingScreen();
     hideErrorMessage();
     hideInstructions();
-    showLoadingScreen();
 
-    if (!isDataLoaded) {
-        // Load data if not already loaded
-        loadStatsData().then(() => {
-            loadRandomImage(); // Call again after data is loaded
-        });
-        return;
-    }
-    
-    const filteredData = filterGraffitiData();
-
-    if (filteredData.length === 0) {
-        hideLoadingScreen();
-        showErrorMessage('No graffiti images match your criteria. Try broadening your filters or search.');
-        currentImages = [];
-        currentImageIndex = -1;
-        updateButtonStates();
-        updateFilteredStats(filteredData); // Show 0 counts
-        return;
+    // If filters are active, we need the full dataset
+    if (needsFullDataset()) {
+        if (!isDataLoaded) {
+            return loadFullDataset().then(() => {
+                const filtered = filterGraffitiData();
+                return loadRandomFromFiltered(filtered);
+            });
+        }
+        const filtered = filterGraffitiData();
+        return loadRandomFromFiltered(filtered);
     }
 
-    currentImages = filteredData;
-    currentImageIndex = Math.floor(Math.random() * currentImages.length);
-    updateFilteredStats(currentImages); // Update counts based on filtered results
-    displayCurrentImage();
+    // Otherwise, just get a random image from the sample endpoint
+    return fetch('random_sample.json')
+        .then(response => response.json())
+        .then(displayGraffitiImage)
+        .catch(handleImageError)
+        .finally(hideLoadingScreen);
 }
 
+function needsFullDataset() {
+    return elements.areaDropdown.value || 
+           elements.zipDropdown.value || 
+           elements.dateRangeDropdown.value !== 'all' ||
+           elements.searchInput.value.trim() ||
+           !(elements.closedStatusCheckbox.checked && elements.openStatusCheckbox.checked);
+}
 
 function loadNextImage() {
     if (currentImages.length <= 1) return; // No next if 0 or 1 image
@@ -1163,17 +1155,14 @@ console.log("Phiti script loaded.");
 
 // Separate function to load stats only when needed
 async function loadStatistics() {
-    const statsSection = document.querySelector('[data-section="stats"]');
-    
-    // Only load stats when they become visible or explicitly requested
     try {
-        // Use a pre-computed stats endpoint or smaller summary file instead of full data
-        const response = await fetch('stats_summary.json'); // Create this smaller file with just stats
+        const response = await fetch('stats_summary.json');
         const stats = await response.json();
         
-        document.getElementById('totalRequests').textContent = stats.totalRequests.toLocaleString();
-        document.getElementById('avgResolutionTime').textContent = stats.avgResolutionTime;
-        document.getElementById('statusCounts').textContent = `Open: ${stats.openCount}, Closed: ${stats.closedCount}`;
+        elements.totalRequestsElement.textContent = stats.totalRequests.toLocaleString();
+        elements.avgResolutionTimeElement.textContent = stats.avgResolutionDays;
+        elements.statusCountsElement.textContent = 
+            `Open: ${stats.openCount}, Closed: ${stats.closedCount}`;
     } catch (error) {
         console.error('Error loading statistics:', error);
     }

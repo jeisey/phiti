@@ -1,6 +1,7 @@
 import pandas as pd
 import requests
 from datetime import datetime
+import json
 
 # Step 1: Fetch current dataset from GitHub
 url = "https://raw.githubusercontent.com/jeisey/phiti/main/graffiti.csv"
@@ -92,3 +93,21 @@ current_data.drop(columns=['Zip', 'District'], inplace=True)  # Drop the columns
 
 # Save the updated dataframe (pushed to git repository)
 current_data.to_csv("graffiti.csv", index=False)
+
+def create_random_sample():
+    # Select 20 random entries from your data
+    sample = pd.DataFrame(new_data.sample(n=20))
+    sample.to_json('random_sample.json', orient='records')
+
+def create_stats_summary():
+    stats = {
+        'totalRequests': len(new_data),
+        'openCount': len(new_data[new_data['status'] == 'Open']),
+        'closedCount': len(new_data[new_data['status'] == 'Closed']),
+        'avgResolutionDays': int(new_data[new_data['status'] == 'Closed']['time_to_close'].mean())
+    }
+    with open('stats_summary.json', 'w') as f:
+        json.dump(stats, f)
+        
+create_random_sample(new_data)
+create_stats_summary(new_data)
