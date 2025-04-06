@@ -94,20 +94,23 @@ current_data.drop(columns=['Zip', 'District'], inplace=True)  # Drop the columns
 # Save the updated dataframe (pushed to git repository)
 current_data.to_csv("graffiti.csv", index=False)
 
-def create_random_sample():
+def create_random_sample(data):
     # Select 20 random entries from your data
-    sample = pd.DataFrame(new_data.sample(n=20))
+    sample = pd.DataFrame(data.sample(n=20))
     sample.to_json('random_sample.json', orient='records')
+    print("Created random_sample.json with 20 random entries")
 
-def create_stats_summary():
+def create_stats_summary(data):
     stats = {
-        'totalRequests': len(new_data),
-        'openCount': len(new_data[new_data['status'] == 'Open']),
-        'closedCount': len(new_data[new_data['status'] == 'Closed']),
-        'avgResolutionDays': int(new_data[new_data['status'] == 'Closed']['time_to_close'].mean())
+        'totalRequests': len(data),
+        'openCount': len(data[data['status'] == 'Open']),
+        'closedCount': len(data[data['status'] == 'Closed']),
+        'avgResolutionDays': int(data[data['status'] == 'Closed']['time_to_close'].mean())
     }
     with open('stats_summary.json', 'w') as f:
         json.dump(stats, f)
-        
-create_random_sample(new_data)
-create_stats_summary(new_data)
+    print("Created stats_summary.json")
+
+# Note: Change new_data to current_data since that's our final processed dataset
+create_random_sample(current_data)
+create_stats_summary(current_data)
