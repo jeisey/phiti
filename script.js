@@ -561,6 +561,7 @@ function displayCurrentImage() {
     elements.graffitiImage.onerror = null;
 
     elements.graffitiImage.onload = () => {
+        clearTimeout(imageLoadTimer);
         hideLoadingScreen();
         elements.graffitiImage.classList.remove('hidden');
         elements.imageControls.classList.remove('hidden'); // Show zoom controls
@@ -578,10 +579,16 @@ function displayCurrentImage() {
     };
 
     elements.graffitiImage.onerror = () => {
+        clearTimeout(imageLoadTimer);
         console.error(`Failed to load image: ${currentEntry.media_url}`);
         handleImageError(`Unable to load image. It might be unavailable. URL: ${currentEntry.media_url}`);
-    };
-}
+};
+    // Set a timeout to skip if image takes too long
+    const imageLoadTimer = setTimeout(() => {
+        console.warn("Image load timed out, loading next image...");
+        elements.graffitiImage.onerror();  // trigger error handler to skip
+    }, 10000);
+    elements.graffitiImage.src = currentEntry.media_url;
 
 
 function handleImageError(customMessage = 'Unable to load the image. It might be unavailable or removed.') {
@@ -937,6 +944,27 @@ async function copyShareLink() {
 }
 
 
+
+function displayGraffitiImage(data) {
+    hideLoadingScreen();
+    hideErrorMessage();
+    hideInstructions();
+    if (Array.isArray(data)) {
+        if (data.length === 0) {
+            showErrorMessage("No images available in the sample.");
+            return;
+        }
+        currentImages = data;
+        // Start with a random image from the sample list
+        currentImageIndex = Math.floor(Math.random() * data.length);
+    } else {
+        currentImages = [data];
+        currentImageIndex = 0;
+    }
+    updateFilteredStats(currentImages);
+    displayCurrentImage();
+}
+    
 function shareOnTwitter() {
     const url = encodeURIComponent(elements.shareLinkInput.value);
     const text = encodeURIComponent('Check out this graffiti removal request in Philadelphia on Phiti!');
