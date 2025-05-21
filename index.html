@@ -1,254 +1,59 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport" /> <!-- Added user-scalable=no for better swipe -->
-    <title>Phiti - Philadelphia Graffiti Explorer</title>
-    <link href="styles.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Phiti Graffiti Explorer</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <link rel="icon" href="https://raw.githubusercontent.com/jeisey/phiti/refs/heads/main/phiti_logo.png"/>
 </head>
 <body>
-    <div class="dashboard">
-        <!-- Sidebar (Hidden on mobile, content moved to panel) -->
-        <div class="sidebar">
-             <div class="logo-container">
-                <img alt="phiti logo" class="sidebar-logo"
-                    src="https://raw.githubusercontent.com/jeisey/phiti/main/phiti_logo.png" />
-            </div>
-            <p class="tagline">Explore Philadelphia's graffiti removal requests</p>
+  <header>
+    <img id="logo" src="https://raw.githubusercontent.com/jeisey/phiti/refs/heads/main/phiti_logo.png" alt="Phiti Logo"/>
+    <h1>Phiti Graffiti Explorer</h1>
+    <p class="subtitle">Roam the Philly streets, discover graffiti, and dive into the city's tags</p>
+  </header>
 
-            <!-- Sidebar Content Wrapper -->
-            <div class="sidebar-content">
-                <!-- Search bar -->
-                <div class="search-container">
-                    <input type="text" id="search" placeholder="Search address or zip">
-                    <button id="searchBtn" class="icon-button" aria-label="Search"><i class="fas fa-search"></i></button>
-                </div>
-
-                <!-- Filter section -->
-                <div class="mobile-section active" data-section="filters">
-                    <div class="filter-section">
-                        <h3>Filter Options</h3>
-                        <div class="dropdowns">
-                            <div class="dropdown">
-                                <label for="area">Area:</label>
-                                <div class="select-wrapper">
-                                    <select id="area">
-                                        <!-- Options populated dynamically -->
-                                    </select>
-                                    <i class="fas fa-chevron-down"></i>
-                                </div>
-                            </div>
-                            <div class="dropdown">
-                                <label for="zipcode">Zip Code:</label>
-                                <div class="select-wrapper">
-                                    <select id="zipcode">
-                                        <!-- Options populated dynamically -->
-                                    </select>
-                                    <i class="fas fa-chevron-down"></i>
-                                </div>
-                            </div>
-                            <div class="dropdown">
-                                <label for="dateRange">Date Range:</label>
-                                <div class="select-wrapper">
-                                    <select id="dateRange">
-                                        <option value="all">All Dates</option>
-                                        <option value="lastWeek">Last Week</option>
-                                        <option value="lastMonth">Last Month</option>
-                                        <option value="last3Months">Last 3 Months</option>
-                                        <option value="lastYear">Last Year</option>
-                                    </select>
-                                    <i class="fas fa-chevron-down"></i>
-                                </div>
-                            </div>
-                            <div class="status-filter">
-                                <input checked="true" id="closedStatus" type="checkbox" />
-                                <label for="closedStatus">Closed</label>
-                                <input checked="true" id="openStatus" type="checkbox" />
-                                <label for="openStatus">Open</label>
-                                <div class="tooltip-container">
-                                    <i class="fas fa-question-circle"></i>
-                                    <span class="tooltip-text">
-                                        <b>Closed:</b> Request addressed.<br>
-                                        <b>Open:</b> Request not resolved.
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <button id="viewImage" class="primary-button">
-                            <i class="fas fa-eye"></i> View Graffiti
-                        </button>
-                         <button id="randomStartButtonDesktop" class="secondary-button" style="margin-top: 10px;">
-                             <i class="fas fa-random"></i> Random Graffiti
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Desktop Action buttons -->
-                <div class="action-buttons desktop-only">
-                    <button id="nextImageDesktop" class="secondary-button" disabled>
-                        <i class="fas fa-arrow-right"></i> Next
-                    </button>
-                    <button id="shareImageDesktop" class="secondary-button" disabled>
-                        <i class="fas fa-share-alt"></i> Share
-                    </button>
-                </div>
-
-                <!-- Stats at a glance -->
-                <div class="mobile-section" data-section="stats">
-                    <div class="stats-container">
-                        <h3>Stats at a Glance</h3>
-                        <div class="stats-grid">
-                            <div class="stat-item">
-                                <span id="totalRequests" class="stat-number">0</span>
-                                <span class="stat-label">Total Requests</span>
-                            </div>
-                            <div class="stat-item">
-                                <span id="avgResolutionTime" class="stat-number">0</span>
-                                <span class="stat-label">Avg. Days to Resolve</span>
-                            </div>
-                        </div>
-                        <p id="infoStatusCounts" class="status-count"><strong>Status:</strong> <span id="statusCounts"></span></p>
-                    </div>
-                     <!-- Disclaimer Section -->
-                    <p class="disclaimer"><strong>Please note:</strong> Some graffiti may contain profanity or other NSFW content. Viewer discretion is advised.</p>
-                    <p class="disclaimer"><strong>Availability:</strong> Data is refreshed every Monday at midnight.</p>
-                     <!-- Footer Section for Credits -->
-                    <footer>
-                        <p>Created by: <span>Jesse & Daniel</span></p>
-                        <p>Source: <a href="https://github.com/jeisey/phiti" target="_blank" rel="noopener noreferrer">Github</a></p>
-                        <p>Data: <a href="https://data.phila.gov/visualizations/311-requests/" target="_blank" rel="noopener noreferrer">Philly 311</a></p>
-                    </footer>
-                </div>
-
-                <!-- Current selection details -->
-                <div class="mobile-section" data-section="info">
-                    <div class="info-section">
-                        <h3>Current Selection</h3>
-                        <div class="detail-grid">
-                            <div class="detail-item">
-                                <span class="detail-label"><i class="fas fa-map-marker-alt"></i> Area:</span>
-                                <span id="infoArea" class="detail-value"></span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label"><i class="fas fa-location-dot"></i> Zip Code:</span>
-                                <span id="infoZipcode" class="detail-value"></span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label"><i class="fas fa-road"></i> Address:</span>
-                                <span id="infoAddress" class="detail-value"></span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label"><i class="fas fa-clock"></i> Days to Resolve:</span>
-                                <span id="infoTimeToClose" class="detail-value"></span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label"><i class="fas fa-calendar"></i> Date Reported:</span>
-                                <span id="infoDateReported" class="detail-value"></span>
-                            </div>
-                            <div class="detail-item">
-                                <span class="detail-label"><i class="fas fa-check-circle"></i> Status:</span>
-                                <span id="infoStatus" class="detail-value"></span>
-                            </div>
-                            <div class="detail-item full-width">
-                                <span class="detail-label"><i class="fas fa-clipboard"></i> Notes:</span>
-                                <span id="infoStatusNotes" class="detail-value"></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div> <!-- End sidebar-content -->
-        </div> <!-- End sidebar -->
-
-        <!-- Content Area -->
-        <div class="content-area">
-            <div class="instruction-container hidden"> <!-- Start hidden -->
-                <div class="instruction-card">
-                    <i class="fas fa-map-pin instruction-icon"></i>
-                    <h3>Explore Philly's Graffiti</h3>
-                    <p>Select filters or search, then click <strong>'View Graffiti'</strong> or <strong>'Random Graffiti'</strong>.</p>
-                    <div class="quick-start">
-                        <button id="randomStartButton" class="primary-button">
-                            <i class="fas fa-random"></i> Show Random Graffiti
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Loading indicator -->
-            <div id="loadingIndicator" class="loading-container hidden"> <!-- Start hidden -->
-                <div class="spinner"></div>
-                <p>Loading...</p> <!-- Changed text -->
-            </div>
-
-            <div class="image-container" id="imageContainer">
-                <img alt="Graffiti Image" id="graffitiImage" class="hidden" src="" />
-
-                <!-- Desktop/Mobile Zoom Controls -->
-                <div class="image-controls hidden" id="imageControls">
-                    <button id="zoomIn" class="image-button" aria-label="Zoom In"><i class="fas fa-search-plus"></i></button>
-                    <button id="zoomOut" class="image-button" aria-label="Zoom Out"><i class="fas fa-search-minus"></i></button>
-                    <button id="resetZoom" class="image-button" aria-label="Reset Zoom"><i class="fas fa-compress"></i></button>
-                </div>
-
-                 <!-- Mobile-specific Overlay Controls -->
-                 <div class="image-overlay-controls mobile-only hidden">
-                     <button id="prevImageMobile" class="overlay-button" aria-label="Previous Image" disabled>
-                         <i class="fas fa-chevron-left"></i>
-                     </button>
-                     <button id="shareImageMobile" class="overlay-button" aria-label="Share Image" disabled>
-                         <i class="fas fa-share-alt"></i>
-                     </button>
-                      <button id="nextImageMobile" class="overlay-button" aria-label="Next Image" disabled>
-                         <i class="fas fa-chevron-right"></i>
-                     </button>
-                 </div>
-            </div>
-
-            <!-- Error message -->
-            <div id="errorMessage" class="error-container hidden">
-                <i class="fas fa-exclamation-triangle"></i>
-                <p>Something went wrong.</p> <!-- Placeholder text -->
-                <button id="tryAgainButton" class="secondary-button">
-                    <i class="fas fa-redo"></i> Try Again
-                </button>
-            </div>
-
-             <!-- Mobile Panel Toggle Button -->
-            <button id="mobilePanelToggle" class="mobile-only fab-button" aria-label="Open Filters and Info Panel">
-                <i class="fas fa-sliders-h"></i> <!-- Filter icon -->
-            </button>
-
-        </div> <!-- End content-area -->
-    </div> <!-- End dashboard -->
-
-     <!-- Mobile Panel (Sidebar content moved here on mobile) -->
-     <div id="mobilePanel" class="mobile-panel mobile-only">
-         <button id="mobilePanelClose" class="close-panel-button" aria-label="Close Panel">×</button>
-         <div class="mobile-panel-content">
-             <!-- Sidebar content will be dynamically moved here -->
-         </div>
-     </div>
-     <div id="mobilePanelOverlay" class="mobile-panel-overlay mobile-only"></div>
-
-    <!-- Share Modal -->
-    <div id="shareModal" class="modal hidden">
-        <div class="modal-content">
-            <span class="close" aria-label="Close Share Dialog">×</span>
-            <h2>Share This Graffiti</h2>
-            <p>Copy the link below to share this graffiti image:</p>
-            <div class="share-link-container">
-                <input type="text" id="shareLink" readonly aria-label="Shareable link">
-                <button id="copyLink" aria-label="Copy link to clipboard"><i class="fas fa-copy"></i> Copy</button>
-            </div>
-            <div class="social-share">
-                <button class="social-button twitter" aria-label="Share on Twitter"><i class="fab fa-twitter"></i> Twitter</button>
-                <button class="social-button facebook" aria-label="Share on Facebook"><i class="fab fa-facebook"></i> Facebook</button>
-                <button class="social-button email" aria-label="Share via Email"><i class="fas fa-envelope"></i> Email</button>
-            </div>
-        </div>
+  <section id="filters">
+    <div class="filter-group">
+      <label for="area">Area</label>
+      <select id="area" class="filter"></select>
     </div>
+    <div class="filter-group">
+      <label for="status">Status</label>
+      <select id="status" class="filter"></select>
+    </div>
+    <div class="filter-group">
+      <label for="zipcode">Zipcode</label>
+      <select id="zipcode" class="filter"></select>
+    </div>
+    <div class="filter-group">
+      <label for="date">Year</label>
+      <select id="date" class="filter"></select>
+    </div>
+    <div class="filter-group" id="search-group">
+      <label for="search">Search</label>
+      <input id="search" class="filter" type="text" placeholder="Address, notes..." autocomplete="off"/>
+    </div>
+    <button id="randomBtn" title="Show a random tag">🎲 Random</button>
+  </section>
 
-    <script src="script.js"></script>
+  <main>
+    <section id="gallery"></section>
+    <div id="loader" class="hidden">Loading Graffiti...</div>
+  </main>
+
+  <footer>
+    <p>Dataset via Philly 311 &bull; <a href="https://github.com/jeisey/phiti" target="_blank">View on GitHub</a></p>
+  </footer>
+
+  <script src="script.js"></script>
+  
+  <div id="lightbox" class="hidden">
+    <div class="lightbox-bg"></div>
+    <img id="lightbox-img" src="" alt="Full graffiti"/>
+    <button id="lightbox-close" title="Close">&times;</button>
+  </div>
+
 </body>
 </html>
