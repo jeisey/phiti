@@ -40,20 +40,20 @@
 
   <main>
     <section id="gallery"></section>
-    <div id="loader" class="hidden">Loading Graffiti...</div>
+    <div id="loader" class="hidden"><span class="spinner"></span> Loading Graffiti...</div>
   </main>
 
   <footer>
     <p>Dataset via Philly 311 &bull; <a href="https://github.com/jeisey/phiti" target="_blank">View on GitHub</a></p>
   </footer>
 
-  <script src="script.js"></script>
-  
-  <div id="lightbox" class="hidden">
+  <!-- Lightbox modal for full-size images -->
+  <div id="lightbox" class="hidden" role="dialog" aria-modal="true" aria-label="Enlarged graffiti image">
     <div class="lightbox-bg"></div>
     <img id="lightbox-img" src="" alt="Full graffiti"/>
     <button id="lightbox-close" title="Close">&times;</button>
   </div>
 
+  <script src="script.js" defer></script>
 </body>
 </html>
