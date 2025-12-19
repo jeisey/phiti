@@ -87,7 +87,7 @@ header .subtitle {
   margin-bottom: 0.2rem;
 }
 
-.filter, #randomBtn {
+.filter, #randomBtn, #clearBtn {
   font-size: 1.05rem;
   background: var(--surface);
   color: var(--text);
@@ -100,7 +100,8 @@ header .subtitle {
   transition: background 0.15s, border 0.18s;
 }
 .filter:focus,
-#randomBtn:focus {
+#randomBtn:focus,
+#clearBtn:focus {
   outline: 3px solid var(--accent);
 }
 #randomBtn {
