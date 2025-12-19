@@ -6,6 +6,11 @@
   <title>Phiti Graffiti Explorer</title>
   <link rel="stylesheet" href="styles.css"/>
   <link rel="icon" href="phiti_logo.png"/>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <!-- Leaflet MarkerCluster CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css"/>
 </head>
 <body>
   <header>
@@ -37,6 +42,10 @@
     </div>
     <button id="randomBtn" title="Show a random tag">🎲 Random</button>
     <button id="clearBtn" title="Clear all filters">✕ Clear</button>
+    <div class="view-toggle">
+      <button id="galleryViewBtn" class="view-btn active" title="Gallery View">🖼️ Gallery</button>
+      <button id="mapViewBtn" class="view-btn" title="Map View">🗺️ Map</button>
+    </div>
   </section>
 
   <div id="results-info">
@@ -45,6 +54,21 @@
 
   <main>
     <section id="gallery"></section>
+    <section id="map-container" class="hidden">
+      <div id="map"></div>
+      <div id="map-controls">
+        <button id="clusterModeBtn" class="map-mode-btn active" title="Cluster View">📍 Clusters</button>
+        <button id="heatModeBtn" class="map-mode-btn" title="Heatmap View">🔥 Heatmap</button>
+      </div>
+      <div id="map-legend">
+        <div class="legend-title">Graffiti Density</div>
+        <div class="legend-gradient"></div>
+        <div class="legend-labels">
+          <span>Low</span>
+          <span>High</span>
+        </div>
+      </div>
+    </section>
     <div id="loader" class="hidden"><span class="spinner"></span> Loading Graffiti...</div>
   </main>
 
@@ -59,6 +83,12 @@
     <button id="lightbox-close" title="Close">&times;</button>
   </div>
 
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <!-- Leaflet MarkerCluster JS -->
+  <script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+  <!-- Leaflet Heat JS -->
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
   <script src="script.js" defer></script>
 </body>
 </html>
