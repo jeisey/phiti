@@ -43,7 +43,9 @@ const filters = {
   date: document.getElementById('date')
 };
 const $randomBtn = document.getElementById('randomBtn');
+const $clearBtn = document.getElementById('clearBtn');
 const $search = document.getElementById('search');
+const $resultsCount = document.getElementById('results-count');
 
 let graffitiData = [];
 let filtered = [];
@@ -94,6 +96,30 @@ function prepFilters() {
   Object.values(filters).forEach(select => select.onchange = () => render(true));
   $search.oninput = () => render(true);
   $randomBtn.onclick = showRandom;
+  $clearBtn.onclick = clearFilters;
+}
+
+// --- CLEAR FILTERS ---
+function clearFilters() {
+  filters.area.value = '';
+  filters.status.value = '';
+  filters.zipcode.value = '';
+  filters.date.value = '';
+  $search.value = '';
+  render(true);
+}
+
+// --- UPDATE RESULTS COUNT ---
+function updateResultsCount() {
+  const total = graffitiData.length;
+  const shown = filtered.length;
+  if (total === 0) {
+    $resultsCount.textContent = '';
+  } else if (shown === total) {
+    $resultsCount.textContent = `Showing all ${total.toLocaleString()} records`;
+  } else {
+    $resultsCount.textContent = `Showing ${shown.toLocaleString()} of ${total.toLocaleString()} records`;
+  }
 }
 
 // --- HELPERS ---
@@ -125,6 +151,7 @@ function render(resetPointer = false) {
   if (resetPointer) lazyPointer = 0;
   $gallery.innerHTML = '';
   filtered = applyFiltersAndSearch();
+  updateResultsCount();
   if (!filtered.length) {
     $gallery.innerHTML = '<div style="color:#f53753;font-size:1.2em;padding:2.5em;text-align:center;">No graffiti matches these filters. Try relaxing your search!</div>';
     return;

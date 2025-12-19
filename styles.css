@@ -120,6 +120,37 @@ header .subtitle {
   transform: scale(1.09);
 }
 
+#clearBtn {
+  font-family: 'Permanent Marker', cursive;
+  background: var(--street);
+  color: #fff;
+  border-radius: 50px;
+  padding: 0.35rem 1.1rem;
+  border: 3px solid var(--accent2);
+  cursor: pointer;
+  box-shadow: 0 2px 12px #111b;
+  transition: background 0.2s, transform 0.09s, border-color 0.15s;
+}
+#clearBtn:hover {
+  background: var(--accent2);
+  border-color: var(--tag);
+  transform: scale(1.09);
+}
+
+/* Results info bar */
+#results-info {
+  background: linear-gradient(90deg, #191a1c 70%, #252627 100%);
+  text-align: center;
+  padding: 0.6rem 1rem;
+  border-bottom: 1px solid var(--street);
+}
+#results-count {
+  font-family: 'Permanent Marker', cursive;
+  font-size: 1rem;
+  color: var(--accent);
+  letter-spacing: 0.5px;
+}
+
 /* Search box style */
 #search-group input[type="text"] {
   min-width: 140px;
