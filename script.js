@@ -47,10 +47,26 @@ const $clearBtn = document.getElementById('clearBtn');
 const $search = document.getElementById('search');
 const $resultsCount = document.getElementById('results-count');
 
+// Map-related DOM elements
+const $mapContainer = document.getElementById('map-container');
+const $galleryViewBtn = document.getElementById('galleryViewBtn');
+const $mapViewBtn = document.getElementById('mapViewBtn');
+const $clusterModeBtn = document.getElementById('clusterModeBtn');
+const $heatModeBtn = document.getElementById('heatModeBtn');
+const $mapLegend = document.getElementById('map-legend');
+
 let graffitiData = [];
 let filtered = [];
 let lazyPointer = 0;
 let lastFocus = null;  // will hold the last focused element before opening lightbox
+
+// Map state
+let map = null;
+let markerClusterGroup = null;
+let heatLayer = null;
+let currentMapMode = 'cluster'; // 'cluster' or 'heat'
+let currentView = 'gallery'; // 'gallery' or 'map'
+let mapInitialized = false;
 
 // --- INIT ---
 async function init() {
@@ -67,6 +83,7 @@ async function init() {
   }
   graffitiData = parseCSV(csvText);
   prepFilters();
+  setupViewToggle();
   render(true);  // initial render (resets lazyPointer)
   showLoader(false);
   setupLazyLoad();
@@ -152,6 +169,12 @@ function render(resetPointer = false) {
   $gallery.innerHTML = '';
   filtered = applyFiltersAndSearch();
   updateResultsCount();
+
+  // Update map if in map view
+  if (currentView === 'map' && mapInitialized) {
+    updateMapMarkers();
+  }
+
   if (!filtered.length) {
     $gallery.innerHTML = '<div style="color:#f53753;font-size:1.2em;padding:2.5em;text-align:center;">No graffiti matches these filters. Try relaxing your search!</div>';
     return;
@@ -271,6 +294,276 @@ function onScrollThrottled() {
       renderBatch();
     }
   }, 120);
+}
+
+// ============================================
+// MAP FUNCTIONALITY
+// ============================================
+
+// Philadelphia coordinates
+const PHILLY_CENTER = [39.9526, -75.1652];
+const PHILLY_ZOOM = 12;
+
+// Custom marker icon
+const graffitiIcon = L.divIcon({
+  className: 'graffiti-marker',
+  iconSize: [14, 14],
+  iconAnchor: [7, 7],
+  popupAnchor: [0, -10]
+});
+
+// --- VIEW TOGGLE ---
+function setupViewToggle() {
+  $galleryViewBtn.onclick = () => switchView('gallery');
+  $mapViewBtn.onclick = () => switchView('map');
+  $clusterModeBtn.onclick = () => switchMapMode('cluster');
+  $heatModeBtn.onclick = () => switchMapMode('heat');
+}
+
+function switchView(view) {
+  currentView = view;
+
+  // Update toggle buttons
+  $galleryViewBtn.classList.toggle('active', view === 'gallery');
+  $mapViewBtn.classList.toggle('active', view === 'map');
+
+  // Show/hide containers
+  if (view === 'gallery') {
+    $gallery.style.display = '';
+    $mapContainer.classList.add('hidden');
+  } else {
+    $gallery.style.display = 'none';
+    $mapContainer.classList.remove('hidden');
+
+    // Initialize map on first view
+    if (!mapInitialized) {
+      initMap();
+    } else {
+      // Refresh map size in case container was hidden
+      setTimeout(() => {
+        map.invalidateSize();
+        updateMapMarkers();
+      }, 100);
+    }
+  }
+}
+
+// --- MAP INITIALIZATION ---
+function initMap() {
+  // Create map with dark-themed tiles
+  map = L.map('map', {
+    center: PHILLY_CENTER,
+    zoom: PHILLY_ZOOM,
+    zoomControl: true,
+    maxZoom: 19,
+    minZoom: 10
+  });
+
+  // Dark-themed map tiles (CartoDB Dark Matter)
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    subdomains: 'abcd',
+    maxZoom: 20
+  }).addTo(map);
+
+  // Initialize marker cluster group with custom options
+  markerClusterGroup = L.markerClusterGroup({
+    chunkedLoading: true,
+    chunkInterval: 100,
+    chunkDelay: 50,
+    spiderfyOnMaxZoom: true,
+    showCoverageOnHover: false,
+    zoomToBoundsOnClick: true,
+    maxClusterRadius: 60,
+    disableClusteringAtZoom: 18,
+    iconCreateFunction: function(cluster) {
+      const count = cluster.getChildCount();
+      let size = 'small';
+      if (count > 100) size = 'large';
+      else if (count > 20) size = 'medium';
+
+      return L.divIcon({
+        html: '<div>' + formatClusterCount(count) + '</div>',
+        className: 'marker-cluster marker-cluster-' + size,
+        iconSize: L.point(40, 40)
+      });
+    }
+  });
+
+  map.addLayer(markerClusterGroup);
+  mapInitialized = true;
+
+  // Add markers for filtered data
+  updateMapMarkers();
+}
+
+// Format large numbers for cluster display
+function formatClusterCount(count) {
+  if (count >= 1000) {
+    return (count / 1000).toFixed(1) + 'k';
+  }
+  return count;
+}
+
+// --- UPDATE MAP MARKERS ---
+function updateMapMarkers() {
+  if (!mapInitialized) return;
+
+  // Clear existing layers
+  markerClusterGroup.clearLayers();
+  if (heatLayer) {
+    map.removeLayer(heatLayer);
+    heatLayer = null;
+  }
+
+  // Filter out items without valid coordinates
+  const geoData = filtered.filter(g =>
+    g.lat && g.lon &&
+    !isNaN(parseFloat(g.lat)) &&
+    !isNaN(parseFloat(g.lon))
+  );
+
+  if (currentMapMode === 'cluster') {
+    // Show cluster markers
+    $mapLegend.classList.remove('visible');
+    addClusterMarkers(geoData);
+  } else {
+    // Show heatmap
+    $mapLegend.classList.add('visible');
+    addHeatmap(geoData);
+  }
+}
+
+// --- CLUSTER MARKERS ---
+function addClusterMarkers(data) {
+  // Limit markers for performance (sample if too many)
+  const maxMarkers = 15000;
+  let markerData = data;
+
+  if (data.length > maxMarkers) {
+    // Random sampling for very large datasets
+    markerData = sampleArray(data, maxMarkers);
+  }
+
+  const markers = markerData.map(g => {
+    const lat = parseFloat(g.lat);
+    const lon = parseFloat(g.lon);
+    const marker = L.marker([lat, lon], { icon: graffitiIcon });
+
+    // Bind popup with graffiti info
+    marker.bindPopup(() => createPopupContent(g), {
+      maxWidth: 300,
+      minWidth: 250,
+      className: 'graffiti-popup'
+    });
+
+    return marker;
+  });
+
+  markerClusterGroup.addLayers(markers);
+}
+
+// --- HEATMAP ---
+function addHeatmap(data) {
+  // Create heat data array [lat, lon, intensity]
+  const heatData = data.map(g => {
+    const lat = parseFloat(g.lat);
+    const lon = parseFloat(g.lon);
+    return [lat, lon, 0.5]; // uniform intensity
+  });
+
+  // Create heatmap layer with custom gradient matching theme
+  heatLayer = L.heatLayer(heatData, {
+    radius: 20,
+    blur: 15,
+    maxZoom: 17,
+    max: 1.0,
+    minOpacity: 0.3,
+    gradient: {
+      0.0: 'rgba(86, 227, 86, 0)',
+      0.2: 'rgba(86, 227, 86, 0.4)',
+      0.4: 'rgba(230, 230, 55, 0.6)',
+      0.6: 'rgba(245, 55, 83, 0.7)',
+      0.8: 'rgba(245, 55, 83, 0.85)',
+      1.0: 'rgba(245, 55, 83, 1)'
+    }
+  });
+
+  map.addLayer(heatLayer);
+}
+
+// --- MAP MODE TOGGLE ---
+function switchMapMode(mode) {
+  currentMapMode = mode;
+
+  // Update buttons
+  $clusterModeBtn.classList.toggle('active', mode === 'cluster');
+  $heatModeBtn.classList.toggle('active', mode === 'heat');
+
+  // Re-render map
+  updateMapMarkers();
+}
+
+// --- POPUP CONTENT ---
+function createPopupContent(g) {
+  const container = document.createElement('div');
+  container.className = 'popup-content';
+
+  // Image
+  const img = document.createElement('img');
+  img.className = 'popup-img';
+  img.src = g.media_url;
+  img.alt = g.address ? `Graffiti at ${g.address}` : 'Graffiti image';
+  img.loading = 'lazy';
+  img.onerror = () => {
+    img.src = 'https://pbs.twimg.com/profile_images/1110545067683524609/RINKPxjE_400x400.png';
+  };
+  img.onclick = () => showLightbox(g.media_url, img.alt);
+  container.appendChild(img);
+
+  // Info section
+  const info = document.createElement('div');
+  info.className = 'popup-info';
+
+  info.innerHTML = `
+    <div class="popup-address">
+      ${g.address || 'Unknown Address'}
+      ${g.area ? `<span class="popup-area">${g.area}</span>` : ''}
+    </div>
+    <div class="popup-meta">
+      <strong>Status:</strong> <span class="popup-status">${g.status || '-'}</span>
+    </div>
+    <div class="popup-meta">
+      <strong>Date:</strong> ${g.requested_datetime ? g.requested_datetime.slice(0, 10) : '-'}
+    </div>
+    <div class="popup-meta">
+      <strong>Time to Close:</strong> ${g.time_to_close || '-'} days
+    </div>
+    <div class="popup-meta">
+      <strong>ZIP:</strong> ${g.zipcode || '-'}
+    </div>
+  `;
+
+  // View full image button
+  const viewBtn = document.createElement('button');
+  viewBtn.className = 'popup-view-btn';
+  viewBtn.textContent = 'View Full Image';
+  viewBtn.onclick = () => showLightbox(g.media_url, img.alt);
+  info.appendChild(viewBtn);
+
+  container.appendChild(info);
+  return container;
+}
+
+// --- UTILITY: Sample array ---
+function sampleArray(arr, size) {
+  if (arr.length <= size) return arr;
+  const result = [];
+  const step = arr.length / size;
+  for (let i = 0; i < size; i++) {
+    result.push(arr[Math.floor(i * step)]);
+  }
+  return result;
 }
 
 // --- START ---
