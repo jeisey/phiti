@@ -1,105 +1,75 @@
+import json
 import sys
+import time
+
 import pandas as pd
 import requests
-from datetime import datetime
-import json
+from requests.exceptions import JSONDecodeError as RequestsJSONDecodeError
+from requests.exceptions import RequestException
 
-# Step 1: Fetch current dataset from GitHub
-url = "https://raw.githubusercontent.com/jeisey/phiti/main/graffiti.csv"
-current_data = pd.read_csv(url, parse_dates=['requested_datetime', 'closed_datetime'], encoding='latin1')
-
-# Step 2: Find the most recent requested_datetime
-latest_date = current_data['requested_datetime'].max()
-latest_date = latest_date.tz_convert('UTC')
-
-# Step 3: Query the API for new or modified records
-query = f"""
-SELECT cartodb_id,objectid,service_request_id,status,status_notes,requested_datetime,updated_datetime,expected_datetime,closed_datetime,address,zipcode,media_url,lat,lon 
-FROM public_cases_fc 
-WHERE 
-      ( 
-        (requested_datetime > '{latest_date}') OR 
-        (status = 'Open' AND closed_datetime IS NOT NULL)
-      ) 
-      AND subject = 'Graffiti Removal'
-      AND media_url IS NOT NULL
-      AND media_url <> ''
-"""
-response = requests.get("https://phl.carto.com/api/v2/sql", params={'q': query})
-new_data = pd.DataFrame(response.json()['rows'])
-# Check if there are new records, if not then exit
-if new_data.empty:
-    print("No new records fetched from the API.")
-    sys.exit(0)  # Exit the script gracefully with a status code of 0 (normal termination)
-
-new_data['requested_datetime'] = pd.to_datetime(new_data['requested_datetime'])
-
-# Step 4: Perform upsert operation
-# Update modified records
-mask = (current_data['status'] == 'Open') & (current_data['closed_datetime'].isna())
-
-# Merge datasets on unique identifier
-merged_data = pd.merge(current_data, new_data[['cartodb_id', 'closed_datetime', 'status_notes']], on='cartodb_id', how='left', suffixes=('', '_new'))
-
-# Update the closed_datetime for "Open" status records
-mask = (merged_data['status'] == 'Open') & (merged_data['closed_datetime'].isna()) & (merged_data['closed_datetime_new'].notna())
-merged_data.loc[mask, 'closed_datetime'] = merged_data.loc[mask, 'closed_datetime_new']
-
-# Update the status_notes for these records
-merged_data.loc[mask, 'status_notes'] = merged_data.loc[mask, 'status_notes_new']
-
-# Drop the additional columns introduced due to merging
-merged_data.drop(columns=['closed_datetime_new', 'status_notes_new'], inplace=True)
-
-# Replace current_data with merged_data for further processing
-current_data = merged_data
-
-# Append new records
-new_records = new_data[~new_data['cartodb_id'].isin(current_data['cartodb_id'])]
-current_data = pd.concat([current_data, new_records], ignore_index=True)
-
-# Step 5: Recalculate time_to_close column
-current_date = pd.Timestamp.now(tz='UTC')
-
-# Ensure both columns are parsed as datetime objects
-current_data['closed_datetime'] = pd.to_datetime(current_data['closed_datetime'], errors='coerce', utc=True)
-current_data['requested_datetime'] = pd.to_datetime(current_data['requested_datetime'], utc=True)
-
-# Handle potential NaN values in closed_datetime
-filled_closed_datetime = pd.to_datetime(current_data['closed_datetime'].fillna(current_date))
-# Calculate time_to_close
-current_data['time_to_close'] = (filled_closed_datetime - current_data['requested_datetime']).dt.days
-
-# Load the reference file for area update
-ref_url = "https://raw.githubusercontent.com/jeisey/phiti/main/ref_ziparea.csv"
-ref_data = pd.read_csv(ref_url)
+CURRENT_DATA_URL = "https://raw.githubusercontent.com/jeisey/phiti/main/graffiti.csv"
+REFERENCE_DATA_URL = "https://raw.githubusercontent.com/jeisey/phiti/main/ref_ziparea.csv"
+CARTO_SQL_URL = "https://phl.carto.com/api/v2/sql"
+REQUEST_TIMEOUT_SECONDS = 60
+REQUEST_ATTEMPTS = 3
+RETRY_DELAY_SECONDS = 5
 
 
-# Ensure both columns used for merging are of the same data type
-current_data['zipcode'] = current_data['zipcode'].astype(str)
-ref_data['Zip'] = ref_data['Zip'].astype(str)
+class UpstreamUnavailableError(RuntimeError):
+    pass
 
-# Join the current data with the reference data on zipcode to update the area column
 
-# Convert 'zipcode' to string and then strip any trailing '.0'
-current_data['zipcode'] = current_data['zipcode'].astype(str).str.rstrip('.0')
+def fetch_carto_rows(query, session=None, attempts=REQUEST_ATTEMPTS, retry_delay=RETRY_DELAY_SECONDS):
+    session = session or requests.Session()
+    last_error = None
 
-# Drop rows with invalid zip codes
-invalid_zips = ['1920', '196139', 'None', 'nan']
-current_data = current_data[~current_data['zipcode'].isin(invalid_zips)]
+    for attempt in range(1, attempts + 1):
+        try:
+            response = session.get(
+                CARTO_SQL_URL,
+                params={'q': query},
+                timeout=REQUEST_TIMEOUT_SECONDS,
+            )
+        except RequestException as exc:
+            last_error = UpstreamUnavailableError(f"Carto SQL API request failed: {exc}")
+        else:
+            if response.status_code >= 500:
+                last_error = UpstreamUnavailableError(
+                    f"Carto SQL API returned HTTP {response.status_code}."
+                )
+            elif response.status_code >= 400:
+                response.raise_for_status()
+            else:
+                try:
+                    payload = response.json()
+                except RequestsJSONDecodeError:
+                    content_type = response.headers.get('content-type', 'unknown')
+                    body_prefix = response.text.strip()[:200]
+                    last_error = UpstreamUnavailableError(
+                        "Carto SQL API returned a non-JSON response "
+                        f"(content-type: {content_type}, body prefix: {body_prefix!r})."
+                    )
+                else:
+                    if payload.get('error'):
+                        raise RuntimeError(f"Carto SQL API error: {payload['error']}")
+                    rows = payload.get('rows')
+                    if rows is None:
+                        raise RuntimeError("Carto SQL API response did not include 'rows'.")
+                    return pd.DataFrame(rows)
 
-current_data = current_data.merge(ref_data[['Zip', 'District']], left_on='zipcode', right_on='Zip', how='left')
-current_data['area'] = current_data['District'].fillna("Not Applicable")
-current_data.drop(columns=['Zip', 'District'], inplace=True)  # Drop the columns used for the merge
+        if attempt < attempts:
+            print(f"Carto SQL API unavailable on attempt {attempt}; retrying...")
+            time.sleep(retry_delay)
 
-# Save the updated dataframe (pushed to git repository)
-current_data.to_csv("graffiti.csv", index=False)
+    raise last_error or RuntimeError("Unable to fetch data from the Carto SQL API.")
+
 
 def create_random_sample(data):
     # Select 20 random entries from your data
     sample = pd.DataFrame(data.sample(n=20))
     sample.to_json('random_sample.json', orient='records')
     print("Created random_sample.json with 20 random entries")
+
 
 def create_stats_summary(data):
     stats = {
@@ -112,6 +82,114 @@ def create_stats_summary(data):
         json.dump(stats, f)
     print("Created stats_summary.json")
 
-# Note: Change new_data to current_data since that's our final processed dataset
-create_random_sample(current_data)
-create_stats_summary(current_data)
+
+def main():
+    # Step 1: Fetch current dataset from GitHub
+    current_data = pd.read_csv(
+        CURRENT_DATA_URL,
+        parse_dates=['requested_datetime', 'closed_datetime'],
+        encoding='latin1',
+    )
+
+    # Step 2: Find the most recent requested_datetime
+    latest_date = current_data['requested_datetime'].max().tz_convert('UTC')
+
+    # Step 3: Query the API for new or modified records
+    query = f"""
+    SELECT cartodb_id,objectid,service_request_id,status,status_notes,requested_datetime,updated_datetime,expected_datetime,closed_datetime,address,zipcode,media_url,lat,lon
+    FROM public_cases_fc
+    WHERE
+          (
+            (requested_datetime > '{latest_date}') OR
+            (status = 'Open' AND closed_datetime IS NOT NULL)
+          )
+          AND subject = 'Graffiti Removal'
+          AND media_url IS NOT NULL
+          AND media_url <> ''
+    """
+    try:
+        new_data = fetch_carto_rows(query)
+    except UpstreamUnavailableError as exc:
+        print(f"Skipping update: {exc}")
+        sys.exit(0)
+
+    # Check if there are new records, if not then exit
+    if new_data.empty:
+        print("No new records fetched from the API.")
+        sys.exit(0)  # Exit the script gracefully with a status code of 0 (normal termination)
+
+    new_data['requested_datetime'] = pd.to_datetime(new_data['requested_datetime'])
+
+    # Step 4: Perform upsert operation
+    # Merge datasets on unique identifier
+    merged_data = pd.merge(
+        current_data,
+        new_data[['cartodb_id', 'closed_datetime', 'status_notes']],
+        on='cartodb_id',
+        how='left',
+        suffixes=('', '_new'),
+    )
+
+    # Update the closed_datetime for "Open" status records
+    mask = (
+        (merged_data['status'] == 'Open')
+        & (merged_data['closed_datetime'].isna())
+        & (merged_data['closed_datetime_new'].notna())
+    )
+    merged_data.loc[mask, 'closed_datetime'] = merged_data.loc[mask, 'closed_datetime_new']
+
+    # Update the status_notes for these records
+    merged_data.loc[mask, 'status_notes'] = merged_data.loc[mask, 'status_notes_new']
+
+    # Drop the additional columns introduced due to merging
+    merged_data.drop(columns=['closed_datetime_new', 'status_notes_new'], inplace=True)
+
+    # Replace current_data with merged_data for further processing
+    current_data = merged_data
+
+    # Append new records
+    new_records = new_data[~new_data['cartodb_id'].isin(current_data['cartodb_id'])]
+    current_data = pd.concat([current_data, new_records], ignore_index=True)
+
+    # Step 5: Recalculate time_to_close column
+    current_date = pd.Timestamp.now(tz='UTC')
+
+    # Ensure both columns are parsed as datetime objects
+    current_data['closed_datetime'] = pd.to_datetime(current_data['closed_datetime'], errors='coerce', utc=True)
+    current_data['requested_datetime'] = pd.to_datetime(current_data['requested_datetime'], utc=True)
+
+    # Handle potential NaN values in closed_datetime
+    filled_closed_datetime = pd.to_datetime(current_data['closed_datetime'].fillna(current_date))
+    # Calculate time_to_close
+    current_data['time_to_close'] = (filled_closed_datetime - current_data['requested_datetime']).dt.days
+
+    # Load the reference file for area update
+    ref_data = pd.read_csv(REFERENCE_DATA_URL)
+
+    # Ensure both columns used for merging are of the same data type
+    current_data['zipcode'] = current_data['zipcode'].astype(str)
+    ref_data['Zip'] = ref_data['Zip'].astype(str)
+
+    # Join the current data with the reference data on zipcode to update the area column
+
+    # Convert 'zipcode' to string and then strip any trailing '.0'
+    current_data['zipcode'] = current_data['zipcode'].astype(str).str.rstrip('.0')
+
+    # Drop rows with invalid zip codes
+    invalid_zips = ['1920', '196139', 'None', 'nan']
+    current_data = current_data[~current_data['zipcode'].isin(invalid_zips)]
+
+    current_data = current_data.merge(ref_data[['Zip', 'District']], left_on='zipcode', right_on='Zip', how='left')
+    current_data['area'] = current_data['District'].fillna("Not Applicable")
+    current_data.drop(columns=['Zip', 'District'], inplace=True)  # Drop the columns used for the merge
+
+    # Save the updated dataframe (pushed to git repository)
+    current_data.to_csv("graffiti.csv", index=False)
+
+    # Note: Change new_data to current_data since that's our final processed dataset
+    create_random_sample(current_data)
+    create_stats_summary(current_data)
+
+
+if __name__ == "__main__":
+    main()
