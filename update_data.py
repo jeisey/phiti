@@ -22,6 +22,8 @@ class UpstreamUnavailableError(RuntimeError):
 def fetch_carto_rows(query, session=None, attempts=REQUEST_ATTEMPTS, retry_delay=RETRY_DELAY_SECONDS):
     if attempts < 1:
         raise ValueError("attempts must be at least 1")
+    if retry_delay < 0:
+        raise ValueError("retry_delay must be non-negative")
 
     session = session or requests.Session()
     last_error = None
@@ -96,6 +98,7 @@ def main():
 
     # Step 2: Find the most recent requested_datetime
     latest_date = current_data['requested_datetime'].max().tz_convert('UTC')
+    latest_date_sql = latest_date.isoformat().replace("'", "''")
 
     # Step 3: Query the API for new or modified records
     query = f"""
@@ -103,7 +106,7 @@ def main():
     FROM public_cases_fc
     WHERE
           (
-            (requested_datetime > '{latest_date}') OR
+            (requested_datetime > '{latest_date_sql}') OR
             (status = 'Open' AND closed_datetime IS NOT NULL)
           )
           AND subject = 'Graffiti Removal'
