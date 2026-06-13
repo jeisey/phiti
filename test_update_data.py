@@ -11,7 +11,7 @@ def make_response(status_code=200, payload=None, json_error=None, text="", conte
     response.status_code = status_code
     response.headers = {"content-type": content_type}
     response.text = text
-    response.raise_for_status.side_effect = requests.HTTPError(f"{status_code} error") if status_code >= 400 else None
+    response.raise_for_status.side_effect = requests.HTTPError(response=response) if status_code >= 400 else None
     if json_error is not None:
         response.json.side_effect = json_error
     else:

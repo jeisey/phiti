@@ -20,10 +20,13 @@ class UpstreamUnavailableError(RuntimeError):
 
 
 def fetch_carto_rows(query, session=None, attempts=REQUEST_ATTEMPTS, retry_delay=RETRY_DELAY_SECONDS):
+    if attempts < 1:
+        raise ValueError("attempts must be at least 1")
+
     session = session or requests.Session()
     last_error = None
 
-    for attempt in range(1, attempts + 1):
+    for attempt_number in range(1, attempts + 1):
         try:
             response = session.get(
                 CARTO_SQL_URL,
@@ -57,11 +60,11 @@ def fetch_carto_rows(query, session=None, attempts=REQUEST_ATTEMPTS, retry_delay
                         raise RuntimeError("Carto SQL API response did not include 'rows'.")
                     return pd.DataFrame(rows)
 
-        if attempt < attempts:
-            print(f"Carto SQL API unavailable on attempt {attempt}; retrying...")
+        if attempt_number < attempts:
+            print(f"Carto SQL API unavailable on attempt {attempt_number}; retrying...")
             time.sleep(retry_delay)
 
-    raise last_error or RuntimeError("Unable to fetch data from the Carto SQL API.")
+    raise last_error
 
 
 def create_random_sample(data):
