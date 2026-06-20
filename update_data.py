@@ -43,7 +43,10 @@ def fetch_carto_rows(query, session=None, attempts=REQUEST_ATTEMPTS, retry_delay
                     f"Carto SQL API returned HTTP {response.status_code}."
                 )
             elif response.status_code >= 400:
-                response.raise_for_status()
+                last_error = UpstreamUnavailableError(
+                    f"Carto SQL API returned HTTP {response.status_code}."
+                )
+                break  # 4xx errors are not transient; do not retry
             else:
                 try:
                     payload = response.json()

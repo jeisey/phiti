@@ -64,6 +64,15 @@ class FetchCartoRowsTests(unittest.TestCase):
         self.assertEqual(result.to_dict("records"), [{"cartodb_id": 2, "status": "Closed"}])
         self.assertEqual(session.get.call_count, 2)
 
+    def test_raises_upstream_unavailable_on_http_400(self):
+        session = mock.Mock()
+        session.get.return_value = make_response(status_code=400)
+
+        with self.assertRaises(update_data.UpstreamUnavailableError):
+            update_data.fetch_carto_rows("SELECT 1", session=session, attempts=2, retry_delay=0)
+
+        self.assertEqual(session.get.call_count, 1)
+
     @mock.patch("update_data.time.sleep", return_value=None)
     def test_retries_after_http_500(self, _sleep):
         session = mock.Mock()
