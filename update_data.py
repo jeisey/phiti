@@ -101,7 +101,7 @@ def main():
 
     # Step 2: Find the most recent requested_datetime
     latest_date = current_data['requested_datetime'].max().tz_convert('UTC')
-    latest_timestamp = int(latest_date.timestamp())
+    latest_iso = latest_date.isoformat()
 
     # Step 3: Query the API for new or modified records
     query = f"""
@@ -109,7 +109,7 @@ def main():
     FROM public_cases_fc
     WHERE
           (
-            (requested_datetime > to_timestamp({latest_timestamp})) OR
+            (requested_datetime > '{latest_iso}') OR
             (status = 'Open' AND closed_datetime IS NOT NULL)
           )
           AND subject = 'Graffiti Removal'
