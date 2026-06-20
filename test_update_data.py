@@ -1,6 +1,7 @@
 import unittest
 from unittest import mock
 
+import pandas as pd
 import requests
 
 import update_data
@@ -64,6 +65,15 @@ class FetchCartoRowsTests(unittest.TestCase):
         self.assertEqual(result.to_dict("records"), [{"cartodb_id": 2, "status": "Closed"}])
         self.assertEqual(session.get.call_count, 2)
 
+    def test_raises_upstream_unavailable_on_http_400(self):
+        session = mock.Mock()
+        session.get.return_value = make_response(status_code=400)
+
+        with self.assertRaises(update_data.UpstreamUnavailableError):
+            update_data.fetch_carto_rows("SELECT 1", session=session, attempts=2, retry_delay=0)
+
+        self.assertEqual(session.get.call_count, 1)
+
     @mock.patch("update_data.time.sleep", return_value=None)
     def test_retries_after_http_500(self, _sleep):
         session = mock.Mock()
@@ -76,6 +86,37 @@ class FetchCartoRowsTests(unittest.TestCase):
 
         self.assertEqual(result.to_dict("records"), [{"cartodb_id": 3, "status": "Open"}])
         self.assertEqual(session.get.call_count, 2)
+
+
+class BuildQueryTests(unittest.TestCase):
+    def _get_query_for_latest_date(self, iso_str):
+        """Return the Carto query that would be built for the given latest datetime string."""
+        df = pd.DataFrame({
+            "cartodb_id": [1],
+            "requested_datetime": pd.to_datetime([iso_str], utc=True),
+            "closed_datetime": [pd.NaT],
+            "status": ["Open"],
+            "status_notes": [""],
+            "zipcode": ["19103"],
+            "area": ["Center City"],
+            "time_to_close": [pd.NA],
+        })
+        with mock.patch("pandas.read_csv", return_value=df):
+            with mock.patch("update_data.fetch_carto_rows") as mock_fetch:
+                mock_fetch.side_effect = SystemExit(0)
+                try:
+                    update_data.main()
+                except SystemExit:
+                    pass
+                if mock_fetch.called:
+                    return mock_fetch.call_args[0][0]
+        return None
+
+    def test_query_uses_iso_datetime_not_to_timestamp(self):
+        query = self._get_query_for_latest_date("2026-05-21 21:07:23+00:00")
+        self.assertIsNotNone(query)
+        self.assertNotIn("to_timestamp", query)
+        self.assertIn("2026-05-21", query)
 
 
 if __name__ == "__main__":
